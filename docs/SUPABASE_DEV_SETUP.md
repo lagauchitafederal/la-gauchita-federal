@@ -19,7 +19,7 @@ Este documento registra el estado y las especificaciones técnicas resultantes t
   - **Tablas**: No se han creado tablas físicas todavía en el servidor.
   - **Migraciones**: No se han generado ni ejecutado archivos de migración SQL todavía en el servidor de base de datos.
 * **Autenticación (Auth)**:
-  - Desactivado/No implementado todavía en la lógica de cliente-servidor de la aplicación.
+  - No implementado todavía en la lógica cliente-servidor de la aplicación. El servicio Auth de Supabase existe, pero aún no se utiliza desde el portal.
 * **Almacenamiento (Storage)**:
   - No se han creado o configurado buckets de almacenamiento todavía.
 * **Seguridad (RLS)**:
@@ -33,7 +33,7 @@ Este documento registra el estado y las especificaciones técnicas resultantes t
 - **Archivo `.env.example`**: Mantenido en el repositorio como plantilla inofensiva y segura para configuraciones iniciales.
 - **Variables de Entorno Utilizadas**:
   - `NEXT_PUBLIC_SUPABASE_URL`: Endpoint de API REST del servidor Supabase.
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (o `NEXT_PUBLIC_SUPABASE_ANON_KEY`): Llave pública anónima de cliente para el bypass controlado del gateway de Supabase.
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (o `NEXT_PUBLIC_SUPABASE_ANON_KEY`): Llave pública de cliente utilizada para operaciones controladas por las políticas de seguridad y RLS de Supabase. No otorga privilegios administrativos.
 - **Seguridad de Claves**:
   - **No se utiliza la `SUPABASE_SECRET_KEY`**.
   - **No se utiliza la `SUPABASE_SERVICE_ROLE_KEY`**.
