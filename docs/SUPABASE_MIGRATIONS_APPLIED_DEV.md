@@ -128,3 +128,53 @@ Recommended next migration:
 ```
 
 This migration must be handled carefully because it will introduce sensitive user-related tables.
+
+---
+
+### 0003_create_profiles_and_user_roles.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Create `profiles` table linked to `auth.users`.
+- Create `user_roles` table linked to `profiles` and `roles`.
+- Enable Row Level Security on both tables.
+- Allow authenticated users to read their own profile.
+- Allow authenticated users to update only non-sensitive fields of their own profile.
+- Allow authenticated users to read only their own assigned roles.
+- Prevent anonymous access to `profiles` and `user_roles`.
+- Prevent users from assigning roles to themselves.
+
+Tables created:
+
+- `profiles`
+- `user_roles`
+
+Security notes:
+
+- RLS is enabled on both tables.
+- No public read access was granted.
+- No anonymous access was granted.
+- No insert, update or delete access was granted for `user_roles`.
+- Profile update access is restricted to non-sensitive fields:
+  - `display_name`
+  - `avatar_url`
+  - `province_id`
+  - `municipality_id`
+- Users cannot update:
+  - `auth_user_id`
+  - `membership_level_id`
+  - `status`
+  - `created_at`
+  - `updated_at`
+
+Verification result:
+
+```txt
+profiles      exists
+user_roles    exists
+profiles      RLS true
+user_roles    RLS true
+profiles      0 rows
+user_roles    0 rows
