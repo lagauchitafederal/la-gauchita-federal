@@ -11,6 +11,11 @@ export interface PublicContent {
   created_at: string;
 }
 
+export interface PublicContentDetail extends PublicContent {
+  body: string | null;
+  source_reference: string | null;
+}
+
 export interface PublicInstitution {
   name: string;
   slug: string;
@@ -41,7 +46,7 @@ export interface PublicMediaAsset {
 }
 
 /**
- * Fetches published contents. RLS filters published, public and active contents.
+ * Fetches published contents for homepage (limit 6). RLS filters published, public and active contents.
  */
 export async function getPublishedContents(): Promise<PublicContent[]> {
   try {
@@ -61,6 +66,54 @@ export async function getPublishedContents(): Promise<PublicContent[]> {
   } catch (err) {
     console.error('Unexpected error fetching published contents:', err);
     return [];
+  }
+}
+
+/**
+ * Fetches the full list of published contents (limit 100). RLS filters published, public and active contents.
+ */
+export async function getPublishedContentsList(): Promise<PublicContent[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('contents')
+      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at')
+      .order('is_featured', { ascending: false })
+      .order('publish_date', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('Error fetching published contents list:', error);
+      return [];
+    }
+    return (data as PublicContent[]) || [];
+  } catch (err) {
+    console.error('Unexpected error fetching published contents list:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetches a single published content detail by slug. RLS filters published, public and active contents.
+ */
+export async function getPublishedContentBySlug(slug: string): Promise<PublicContentDetail | null> {
+  try {
+    if (!slug) return null;
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('contents')
+      .select('title, slug, subtitle, summary, body, event_date, publish_date, is_featured, source_reference, created_at')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching published content by slug:', error);
+      return null;
+    }
+    return (data as PublicContentDetail) || null;
+  } catch (err) {
+    console.error('Unexpected error fetching published content by slug:', err);
+    return null;
   }
 }
 

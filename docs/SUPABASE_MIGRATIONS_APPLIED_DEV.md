@@ -335,3 +335,194 @@ Verification result:
 media_assets    exists
 media_assets    RLS true
 media_assets    0 rows
+
+---
+
+### 0007_create_recognitions.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Create `recognitions` table.
+- Support awards, mentions, declarations, endorsements, distinctions, homages, certifications, press references, participations and other institutional recognitions.
+- Enable recognitions for Eduardo Ceballos, Revista La Gauchita, Instituto Cultural Andino, La Gauchita Federal, books, albums, institutions, contents, events and other cultural products.
+- Link recognitions with institutions, contents and future recognized entities.
+- Enable featured recognitions for institutional showcases.
+- Enable Row Level Security.
+
+Table created:
+
+- `recognitions`
+
+Security notes:
+
+- RLS is enabled on `recognitions`.
+- Anonymous users can read only active and public recognitions.
+- Authenticated users can read only active and public recognitions.
+- Authenticated users can read their own recognitions.
+- Authenticated users can update only non-sensitive fields of their own draft or rejected recognitions.
+- Authenticated users cannot activate or publish recognitions directly.
+- Authenticated users cannot modify:
+  - `slug`
+  - `recognition_type`
+  - `granting_institution_id`
+  - `recognized_entity_type`
+  - `recognized_entity_id`
+  - `related_content_id`
+  - `related_institution_id`
+  - `status`
+  - `visibility`
+  - `is_featured`
+  - `sort_order`
+  - `created_by_profile_id`
+  - `created_at`
+  - `updated_at`
+- No insert grant was created.
+- No delete grant was created.
+- No admin policies were created yet.
+- No institutional editor policies were created yet.
+- No real recognitions were inserted.
+
+Verification result:
+
+```txt
+recognitions    exists
+recognitions    RLS true
+recognitions    0 rows
+
+---
+
+### 0008_create_audit_logs.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Create `audit_logs` table.
+- Prepare the system for future audit and traceability workflows.
+- Support tracking of sensitive changes across profiles, roles, institutions, contents, media assets and recognitions.
+- Enable future recording of actor, action, entity, previous data, new data, reason, IP address and user agent.
+- Enable Row Level Security with a fully restrictive initial posture.
+
+Table created:
+
+- `audit_logs`
+
+Security notes:
+
+- RLS is enabled on `audit_logs`.
+- No public read access was granted.
+- No authenticated read access was granted.
+- No insert grant was created.
+- No update grant was created.
+- No delete grant was created.
+- No permissive RLS policies were created.
+- Anonymous users cannot access audit logs.
+- Authenticated users cannot access audit logs directly.
+- Audit logs are reserved for future internal functions, backend services or explicit administrative policies.
+- No triggers were created yet.
+- No SQL functions were created yet.
+- No real logs were inserted.
+
+Verification result:
+
+```txt
+audit_logs    exists
+audit_logs    RLS true
+audit_logs    0 rows
+
+---
+
+### 0009_create_permission_helpers.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Create minimal permission helper functions.
+- Prepare the database for future RLS policies based on roles and permissions.
+- Centralize role checks using `profiles`, `user_roles` and `roles`.
+- Avoid duplicating role-checking logic across multiple policies.
+- Prepare controlled access to administrative capabilities and audit logs.
+
+Functions created:
+
+- `current_profile_id()`
+- `has_role(role_code text)`
+- `has_any_role(role_codes text[])`
+- `is_super_admin()`
+- `is_general_admin()`
+- `is_admin()`
+- `can_read_audit_logs()`
+
+Security notes:
+
+- Functions are read-only helpers.
+- Functions use `SECURITY DEFINER`.
+- Functions define explicit `search_path`.
+- Functions do not return role lists.
+- Functions do not expose sensitive profile or role data.
+- Functions only return `uuid` or `boolean`.
+- `current_profile_id()` only returns a profile when the profile status is `active`.
+- Suspended, inactive or deleted profiles do not receive permissions through these helpers.
+- Execute privileges were revoked from `public`.
+- Execute privileges were granted only to `authenticated`.
+- No execute privilege was granted to `anon`.
+- No policies were modified.
+- No tables were modified.
+- No triggers were created.
+- No write functions were created.
+- No seed data was inserted.
+
+Verification result:
+
+```txt
+can_read_audit_logs     exists
+current_profile_id      exists
+has_any_role            exists
+has_role                exists
+is_admin                exists
+is_general_admin        exists
+is_super_admin          exists
+
+---
+
+### 0010_update_audit_logs_admin_policy.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Add controlled administrative read access to `audit_logs`.
+- Use the existing permission helper `public.can_read_audit_logs()`.
+- Allow only authorized administrators to read audit logs.
+- Keep audit logs closed to anonymous users.
+- Keep audit logs closed for direct insert, update and delete operations.
+
+Policy created:
+
+- `select_audit_logs_admins`
+
+Security notes:
+
+- The policy applies only to `authenticated`.
+- The policy allows `SELECT` only when `public.can_read_audit_logs()` returns `true`.
+- `public.can_read_audit_logs()` currently depends on `public.is_admin()`.
+- `public.is_admin()` currently allows:
+  - `super_admin`
+  - `general_admin`
+- No access was granted to `anon`.
+- No insert grant was created.
+- No update grant was created.
+- No delete grant was created.
+- No functions were created.
+- No triggers were created.
+- No real logs were inserted.
+
+Verification result:
+
+```txt
+select_audit_logs_admins    SELECT    {authenticated}
+authenticated               SELECT
+anon                        no grants
