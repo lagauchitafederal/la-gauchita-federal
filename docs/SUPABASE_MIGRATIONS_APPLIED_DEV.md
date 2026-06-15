@@ -221,3 +221,117 @@ institutions           RLS true
 institution_members    RLS true
 institutions           0 rows
 institution_members    0 rows
+
+---
+
+### 0005_create_contents.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Create `contents` table.
+- Support articles, news, ephemerides, people profiles, place profiles, teacher resources, magazine articles, institutional content, recognitions and events.
+- Link contents with content types, categories, institutions, profiles and territory.
+- Enable publication workflows through status and visibility fields.
+- Enable featured content.
+- Enable date-based content such as ephemerides, agenda and teacher board items.
+- Enable Row Level Security.
+
+Table created:
+
+- `contents`
+
+Security notes:
+
+- RLS is enabled on `contents`.
+- Anonymous users can read only published, public and already scheduled contents.
+- Authenticated users can read published, public and already scheduled contents.
+- Authenticated users can read their own contents regardless of status.
+- Authenticated users can update only their own contents when status is `draft` or `rejected`.
+- Authenticated users cannot publish directly.
+- Authenticated users cannot modify:
+  - `status`
+  - `visibility`
+  - `publish_date`
+  - `is_featured`
+  - `author_profile_id`
+  - `institution_id`
+  - `content_type_id`
+  - `created_at`
+  - `updated_at`
+- No insert grant was created.
+- No delete grant was created.
+- No admin policies were created yet.
+- No institutional editor policies were created yet.
+- No subscriber policies were created yet.
+
+Verification result:
+
+```txt
+contents    exists
+contents    RLS true
+contents    0 rows
+
+---
+
+### 0006_create_media_assets.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Create `media_assets` table.
+- Support images, cover images, galleries, historical photos, PDFs, magazine files, book files, audio files, teacher resources, institutional documents, recognition documents and archive material.
+- Link media assets with contents, institutions and uploader profiles.
+- Store metadata for future Supabase Storage objects.
+- Enable rights management through `rights_status`.
+- Enable file visibility control through `visibility`.
+- Enable editorial workflow through `status`.
+- Enable Row Level Security.
+
+Table created:
+
+- `media_assets`
+
+Security notes:
+
+- RLS is enabled on `media_assets`.
+- Anonymous users can read only active, public files with valid rights status.
+- Public readable files must have rights status:
+  - `owned`
+  - `authorized`
+  - `public_domain`
+  - `licensed`
+- Anonymous and authenticated users can read public active files associated with published public contents.
+- Authenticated users can read their own uploaded files.
+- Authenticated users can update only non-sensitive metadata fields of their own draft or rejected files.
+- Authenticated users cannot activate files directly.
+- Authenticated users cannot change:
+  - `bucket_name`
+  - `storage_path`
+  - `mime_type`
+  - `file_size_bytes`
+  - `original_filename`
+  - `rights_status`
+  - `visibility`
+  - `status`
+  - `content_id`
+  - `institution_id`
+  - `uploaded_by_profile_id`
+  - `created_at`
+  - `updated_at`
+- No insert grant was created.
+- No delete grant was created.
+- No Storage buckets were created.
+- No files were uploaded.
+- No admin policies were created yet.
+- No institutional editor policies were created yet.
+- No subscriber policies were created yet.
+
+Verification result:
+
+```txt
+media_assets    exists
+media_assets    RLS true
+media_assets    0 rows
