@@ -178,3 +178,46 @@ profiles      RLS true
 user_roles    RLS true
 profiles      0 rows
 user_roles    0 rows
+
+---
+
+### 0004_create_institutions_and_members.sql
+
+Status: applied successfully.
+
+Purpose:
+
+- Create `institutions` table.
+- Create `institution_members` table.
+- Support municipalities, provinces, organisms, schools, libraries, museums, associations, peñas, gastronomic places, cultural centers, media and other participating entities.
+- Enable future “Contamos con la participación de...” sections.
+- Enable institutional participation and future institutional content loading.
+- Enable institutional membership relationships with user profiles.
+- Enable Row Level Security on both tables.
+
+Tables created:
+
+- `institutions`
+- `institution_members`
+
+Security notes:
+
+- RLS is enabled on both tables.
+- Anonymous users can read only active institutions.
+- Authenticated users can read only active institutions and institutions created by their own profile.
+- Anonymous users cannot read `institution_members`.
+- Authenticated users can read only their own institutional memberships.
+- No insert, update or delete grants were created for anonymous users.
+- No insert, update or delete grants were created for authenticated users.
+- No real institution data was inserted.
+- No real user data was inserted.
+
+Verification result:
+
+```txt
+institutions           exists
+institution_members    exists
+institutions           RLS true
+institution_members    RLS true
+institutions           0 rows
+institution_members    0 rows
