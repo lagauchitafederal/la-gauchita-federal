@@ -25,6 +25,14 @@ export interface PublicInstitution {
   sort_order: number;
 }
 
+export interface PublicInstitutionDetail extends PublicInstitution {
+  website_url: string | null;
+  logo_url: string | null;
+  address: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+}
+
 export interface PublicRecognition {
   title: string;
   slug: string;
@@ -118,7 +126,7 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
 }
 
 /**
- * Fetches active institutions. RLS filters active institutions.
+ * Fetches active institutions for homepage (limit 8). RLS filters active institutions.
  */
 export async function getActiveInstitutions(): Promise<PublicInstitution[]> {
   try {
@@ -139,6 +147,55 @@ export async function getActiveInstitutions(): Promise<PublicInstitution[]> {
   } catch (err) {
     console.error('Unexpected error fetching active institutions:', err);
     return [];
+  }
+}
+
+/**
+ * Fetches the full list of active institutions (limit 100). RLS filters active institutions.
+ */
+export async function getActiveInstitutionsList(): Promise<PublicInstitution[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('institutions')
+      .select('name, slug, institution_type, description, is_featured, sort_order')
+      .order('is_featured', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true })
+      .limit(100);
+
+    if (error) {
+      console.error('Error fetching active institutions list:', error);
+      return [];
+    }
+    return (data as PublicInstitution[]) || [];
+  } catch (err) {
+    console.error('Unexpected error fetching active institutions list:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetches a single active institution detail by slug. RLS filters active institutions.
+ */
+export async function getActiveInstitutionBySlug(slug: string): Promise<PublicInstitutionDetail | null> {
+  try {
+    if (!slug) return null;
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('institutions')
+      .select('name, slug, institution_type, description, is_featured, sort_order, website_url, logo_url, address, contact_email, contact_phone')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching active institution by slug:', error);
+      return null;
+    }
+    return (data as PublicInstitutionDetail) || null;
+  } catch (err) {
+    console.error('Unexpected error fetching active institution by slug:', err);
+    return null;
   }
 }
 
