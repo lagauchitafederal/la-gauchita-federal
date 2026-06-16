@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getActiveInstitutionBySlug } from '../../../lib/public-content/public-content';
 import PublicPageShell from '../../../components/public/PublicPageShell';
 import type { Metadata } from 'next';
+import { formatInstitutionType } from '../../../lib/utils/formatters';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!inst) {
     return {
-      title: "Institucion no encontrada",
+      title: "Institución no encontrada",
     };
   }
 
@@ -41,7 +42,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
             <Link href="/instituciones" className="text-stone-500 hover:text-stone-900 font-medium text-sm transition-colors">
               &larr; Volver a instituciones
             </Link>
-            <span className="text-xs text-stone-400 font-mono">Detalle de Institucion</span>
+            <span className="text-xs text-stone-400 font-mono">Detalle de Institución</span>
           </div>
 
           {/* Title and Badge */}
@@ -55,7 +56,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
               {inst.name}
             </h1>
             <span className="self-start text-xs text-stone-500 font-semibold uppercase tracking-wider bg-stone-100 px-2.5 py-1 rounded">
-              Tipo: {inst.institution_type}
+              Tipo: {formatInstitutionType(inst.institution_type)}
             </span>
           </div>
 
@@ -71,7 +72,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
           {/* Contact and Info Grid */}
           <div className="border-t border-stone-100 pt-6 flex flex-col gap-4">
             <h2 className="text-lg font-bold text-stone-800">
-              Informacion de Contacto
+              Información de Contacto
             </h2>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
               {inst.website_url && (
@@ -87,7 +88,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
               
               {inst.contact_email && (
                 <div>
-                  <dt className="font-semibold text-stone-500">Correo Electronico</dt>
+                  <dt className="font-semibold text-stone-500">Correo Electrónico</dt>
                   <dd className="mt-1 text-stone-900 font-medium font-mono">
                     {inst.contact_email}
                   </dd>
@@ -96,7 +97,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
 
               {inst.contact_phone && (
                 <div>
-                  <dt className="font-semibold text-stone-500 font-sans">Telefono de Contacto</dt>
+                  <dt className="font-semibold text-stone-500 font-sans">Teléfono de Contacto</dt>
                   <dd className="mt-1 text-stone-900 font-medium font-mono">
                     {inst.contact_phone}
                   </dd>
@@ -105,7 +106,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
 
               {inst.address && (
                 <div className="sm:col-span-2">
-                  <dt className="font-semibold text-stone-500">Direccion</dt>
+                  <dt className="font-semibold text-stone-500">Dirección</dt>
                   <dd className="mt-1 text-stone-900 font-medium">
                     {inst.address}
                   </dd>

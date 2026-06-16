@@ -61,7 +61,7 @@ export default async function ReconocimientosPage() {
         ) : (
           <div className="bg-white border border-stone-200 rounded-lg p-12 text-center">
             <p className="text-stone-500 text-sm italic">
-              Aun no hay reconocimientos publicos cargados.
+              Aún no hay reconocimientos públicos cargados.
             </p>
           </div>
         )}

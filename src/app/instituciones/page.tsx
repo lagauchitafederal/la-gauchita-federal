@@ -3,10 +3,11 @@ import { getActiveInstitutionsList } from '../../lib/public-content/public-conte
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
 import type { Metadata } from 'next';
+import { formatInstitutionType } from '../../lib/utils/formatters';
 
 export const metadata: Metadata = {
   title: "Instituciones participantes",
-  description: "Contamos con la participacion de instituciones, organismos y espacios culturales que fortalecen la memoria federal.",
+  description: "Contamos con la participación de instituciones, organismos y espacios culturales que fortalecen la memoria federal.",
 };
 
 export default async function InstitucionesPage() {
@@ -16,7 +17,7 @@ export default async function InstitucionesPage() {
     <PublicPageShell>
       <PublicSectionHeader
         title="Instituciones Participantes"
-        description="Contamos con la participacion de instituciones, organismos y espacios culturales que fortalecen la memoria federal."
+        description="Contamos con la participación de instituciones, organismos y espacios culturales que fortalecen la memoria federal."
       />
 
         {/* Institutions List */}
@@ -38,7 +39,7 @@ export default async function InstitucionesPage() {
                 </div>
 
                 <span className="text-xs text-stone-500 font-semibold tracking-wider uppercase">
-                  {inst.institution_type}
+                  {formatInstitutionType(inst.institution_type)}
                 </span>
 
                 {inst.description && (
@@ -47,7 +48,7 @@ export default async function InstitucionesPage() {
 
                 <div className="mt-auto pt-4 border-t border-stone-100 flex justify-end">
                   <Link href={`/instituciones/${inst.slug}`} className="text-xs text-stone-600 hover:text-stone-900 font-bold font-mono">
-                    Ver mas detalles &rarr;
+                    Ver más detalles &rarr;
                   </Link>
                 </div>
               </div>
@@ -56,7 +57,7 @@ export default async function InstitucionesPage() {
         ) : (
           <div className="bg-white border border-stone-200 rounded-lg p-12 text-center">
             <p className="text-stone-500 text-sm italic">
-              Aun no hay instituciones activas cargadas.
+              Aún no hay instituciones activas cargadas.
             </p>
           </div>
         )}

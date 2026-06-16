@@ -67,7 +67,7 @@ export default async function ContentDetailPage({ params }: PageProps) {
               <span>Publicado: {new Date(content.publish_date).toLocaleDateString()}</span>
             )}
             {content.event_date && (
-              <span>Hito Historico: {new Date(content.event_date).toLocaleDateString()}</span>
+              <span>Hito Histórico: {new Date(content.event_date).toLocaleDateString()}</span>
             )}
           </div>
 

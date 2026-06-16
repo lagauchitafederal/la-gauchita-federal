@@ -76,7 +76,7 @@ export default async function RecognitionDetailPage({ params }: PageProps) {
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
               {r.granting_institution_name && (
                 <div>
-                  <dt className="font-semibold text-stone-500">Institucion Otorgante</dt>
+                  <dt className="font-semibold text-stone-500">Institución Otorgante</dt>
                   <dd className="mt-1 text-stone-900 font-medium">
                     {r.granting_institution_name}
                   </dd>

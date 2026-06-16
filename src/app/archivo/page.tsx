@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Archivo y medios",
-  description: "Fotografias, documentos, portadas y materiales de archivo vinculados al patrimonio cultural federal.",
+  description: "Fotografías, documentos, portadas y materiales de archivo vinculados al patrimonio cultural federal.",
 };
 
 export default async function ArchivoPage() {
@@ -15,7 +15,7 @@ export default async function ArchivoPage() {
     <PublicPageShell>
       <PublicSectionHeader
         title="Archivo y Medios"
-        description="Fotografias, documentos, portadas y materiales de archivo vinculados al patrimonio cultural federal."
+        description="Fotografías, documentos, portadas y materiales de archivo vinculados al patrimonio cultural federal."
       />
 
       {mediaAssets.length > 0 ? (
@@ -30,7 +30,7 @@ export default async function ArchivoPage() {
                   {asset.title}
                 </h2>
                 <span className="text-xs bg-stone-100 text-stone-700 px-2 py-0.5 rounded font-medium shrink-0">
-                  Archivo publico
+                  Archivo público
                 </span>
               </div>
 
@@ -59,7 +59,7 @@ export default async function ArchivoPage() {
 
               {asset.credit && (
                 <div className="mt-auto pt-3 border-t border-stone-100 text-xs text-stone-400 font-mono">
-                  Credito: {asset.credit}
+                  Crédito: {asset.credit}
                 </div>
               )}
             </div>
@@ -68,7 +68,7 @@ export default async function ArchivoPage() {
       ) : (
         <div className="bg-white border border-stone-200 rounded-lg p-12 text-center">
           <p className="text-stone-500 text-sm italic">
-            Aun no hay medios publicos cargados.
+            Aún no hay medios públicos cargados.
           </p>
         </div>
       )}

@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Contenidos culturales",
-  description: "Explora las efemerides, historias y tradiciones federales de nuestro pais.",
+  description: "Explora las efemérides, historias y tradiciones federales de nuestro país.",
 };
 
 export default async function ContenidosPage() {
@@ -16,7 +16,7 @@ export default async function ContenidosPage() {
     <PublicPageShell>
       <PublicSectionHeader
         title="Contenidos Culturales"
-        description="Explora las efemerides, historias y tradiciones federales."
+        description="Explora las efemérides, historias y tradiciones federales."
       />
 
         {/* Contents List */}
@@ -53,7 +53,7 @@ export default async function ContenidosPage() {
                     <span>Hito: {new Date(c.event_date).toLocaleDateString()}</span>
                   )}
                   <Link href={`/contenidos/${c.slug}`} className="text-stone-600 hover:text-stone-900 font-semibold ml-auto">
-                    Leer mas &rarr;
+                    Leer más &rarr;
                   </Link>
                 </div>
               </article>
@@ -62,7 +62,7 @@ export default async function ContenidosPage() {
         ) : (
           <div className="bg-white border border-stone-200 rounded-lg p-12 text-center">
             <p className="text-stone-500 text-sm italic">
-              Aun no hay contenidos publicados.
+              Aún no hay contenidos publicados.
             </p>
           </div>
         )}
