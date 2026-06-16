@@ -31,6 +31,9 @@ export default function PublicFooter() {
         <Link href="/archivo" className="hover:text-stone-900 transition-colors">
           Archivo
         </Link>
+        <Link href="/acerca" className="hover:text-stone-900 transition-colors">
+          Acerca
+        </Link>
       </nav>
     </footer>
   );
