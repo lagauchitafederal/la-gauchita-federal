@@ -43,6 +43,13 @@ export interface PublicRecognition {
   sort_order: number;
 }
 
+export interface PublicRecognitionDetail extends PublicRecognition {
+  granting_institution_name: string | null;
+  location: string | null;
+  document_reference: string | null;
+  source_reference: string | null;
+}
+
 export interface PublicMediaAsset {
   title: string;
   asset_type: string;
@@ -200,7 +207,7 @@ export async function getActiveInstitutionBySlug(slug: string): Promise<PublicIn
 }
 
 /**
- * Fetches active recognitions. RLS filters active and public recognitions.
+ * Fetches active recognitions for homepage (limit 6). RLS filters active and public recognitions.
  */
 export async function getActiveRecognitions(): Promise<PublicRecognition[]> {
   try {
@@ -221,6 +228,55 @@ export async function getActiveRecognitions(): Promise<PublicRecognition[]> {
   } catch (err) {
     console.error('Unexpected error fetching active recognitions:', err);
     return [];
+  }
+}
+
+/**
+ * Fetches the full list of active recognitions (limit 100). RLS filters active and public recognitions.
+ */
+export async function getActiveRecognitionsList(): Promise<PublicRecognition[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('recognitions')
+      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order')
+      .order('is_featured', { ascending: false })
+      .order('recognition_date', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .limit(100);
+
+    if (error) {
+      console.error('Error fetching active recognitions list:', error);
+      return [];
+    }
+    return (data as PublicRecognition[]) || [];
+  } catch (err) {
+    console.error('Unexpected error fetching active recognitions list:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetches a single active recognition detail by slug. RLS filters active and public recognitions.
+ */
+export async function getActiveRecognitionBySlug(slug: string): Promise<PublicRecognitionDetail | null> {
+  try {
+    if (!slug) return null;
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('recognitions')
+      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name, location, document_reference, source_reference')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching active recognition by slug:', error);
+      return null;
+    }
+    return (data as PublicRecognitionDetail) || null;
+  } catch (err) {
+    console.error('Unexpected error fetching active recognition by slug:', err);
+    return null;
   }
 }
 
