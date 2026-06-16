@@ -1,5 +1,6 @@
 import React from 'react';
 import PublicHeader from './PublicHeader';
+import PublicFooter from './PublicFooter';
 
 interface PublicPageShellProps {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ export default function PublicPageShell({
       <div className={`w-full ${maxWidth} flex flex-col gap-6`}>
         <PublicHeader />
         {children}
+        <PublicFooter />
       </div>
     </div>
   );
