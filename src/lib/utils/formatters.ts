@@ -40,3 +40,43 @@ export function formatInstitutionType(type: string | null | undefined): string {
     }
   }
 }
+
+export function formatAssetType(type: string | null | undefined): string {
+  if (!type) return '';
+
+  const normalized = type.trim().toLowerCase();
+
+  switch (normalized) {
+    case 'cover_image':
+      return 'Imagen de portada';
+    case 'content_image':
+      return 'Imagen de contenido';
+    case 'gallery_image':
+      return 'Imagen de galer\u00eda';
+    case 'historical_photo':
+      return 'Fotograf\u00eda hist\u00f3rica';
+    case 'pdf_document':
+      return 'Documento PDF';
+    case 'magazine_pdf':
+      return 'Revista PDF';
+    case 'book_pdf':
+      return 'Libro PDF';
+    case 'audio':
+      return 'Audio';
+    case 'teacher_resource':
+      return 'Recurso docente';
+    case 'institutional_document':
+      return 'Documento institucional';
+    case 'recognition_document':
+      return 'Documento de reconocimiento';
+    case 'archive_material':
+      return 'Material de archivo';
+    case 'other':
+      return 'Otro';
+    default: {
+      const cleaned = normalized.replace(/_/g, ' ');
+      return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    }
+  }
+}
+

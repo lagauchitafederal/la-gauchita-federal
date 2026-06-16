@@ -15,7 +15,8 @@ import {
   getPublicMediaAssets
 } from '../lib/public-content/public-content';
 import PublicPageShell from '../components/public/PublicPageShell';
-import { formatInstitutionType } from '../lib/utils/formatters';
+import { formatInstitutionType, formatAssetType } from '../lib/utils/formatters';
+import { getPublicMediaUrl } from '../lib/utils/media-url';
 
 export const metadata: Metadata = {
   title: 'La Gauchita Federal',
@@ -246,22 +247,41 @@ export default async function Home() {
         </h2>
         {mediaAssets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mediaAssets.map((ma) => (
-              <div key={ma.storage_path} className="p-4 bg-stone-50 border border-stone-200 rounded-md flex flex-col gap-2">
-                <h3 className="font-bold text-stone-800">{ma.title}</h3>
-                <div className="flex flex-wrap gap-2 text-xs text-stone-500">
-                  <span className="bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
-                    {ma.asset_type}
-                  </span>
+            {mediaAssets.map((ma) => {
+              const imageUrl = getPublicMediaUrl(ma.bucket_name, ma.storage_path);
+              const isImage = [
+                'cover_image',
+                'content_image',
+                'gallery_image',
+                'historical_photo'
+              ].includes(ma.asset_type);
+
+              return (
+                <div key={ma.storage_path} className="p-4 bg-stone-50 border border-stone-200 rounded-md flex flex-col gap-2">
+                  {isImage && imageUrl && (
+                    <div className="relative w-full h-48 mb-2 overflow-hidden rounded bg-stone-200 flex items-center justify-center">
+                      <img
+                        src={imageUrl}
+                        alt={ma.alt_text || ma.title}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  )}
+                  <h3 className="font-bold text-stone-800">{ma.title}</h3>
+                  <div className="flex flex-wrap gap-2 text-xs text-stone-500">
+                    <span className="bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
+                      {formatAssetType(ma.asset_type)}
+                    </span>
+                  </div>
+                  {ma.alt_text && (
+                    <p className="text-xs text-stone-500">Alt: {ma.alt_text}</p>
+                  )}
+                  {ma.credit && (
+                    <p className="text-xs text-stone-400">Crédito: {ma.credit}</p>
+                  )}
                 </div>
-                {ma.alt_text && (
-                  <p className="text-xs text-stone-500">Alt: {ma.alt_text}</p>
-                )}
-                {ma.credit && (
-                  <p className="text-xs text-stone-400">Crédito: {ma.credit}</p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="text-stone-500 text-sm italic py-4">
