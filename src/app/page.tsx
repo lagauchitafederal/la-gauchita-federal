@@ -13,10 +13,12 @@ import {
   getPublicMediaAssets
 } from '../lib/public-content/public-content';
 import { checkSupabaseEnvironment } from '../lib/supabase/healthcheck';
+import PublicHeader from '../components/public/PublicHeader';
 
 export default async function Home() {
   const envCheck = checkSupabaseEnvironment();
 
+  // Fetch all data in parallel (catalogs + public logical entities)
   const [
     regions,
     provinces,
@@ -41,13 +43,20 @@ export default async function Home() {
     getPublicMediaAssets()
   ]);
 
+  // Evaluate connection status based on environment variables and database responses
   const dbConnected = regions.length > 0 || provinces.length > 0 || municipalities.length > 0;
   const isConnectionSuccessful = envCheck.status === 'ok' && dbConnected;
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full flex flex-col gap-8">
+        
+        {/* Navigation Header */}
+        <PublicHeader />
+
+        {/* Core Control Center Box */}
         <header className="bg-white border border-stone-200 rounded-lg shadow-sm p-8 md:p-12">
+          {/* Header */}
           <div className="border-b border-stone-100 pb-6 mb-8 text-center sm:text-left">
             <h1 className="text-4xl font-extrabold tracking-tight text-stone-900 mb-2">
               La Gauchita Federal
@@ -57,6 +66,7 @@ export default async function Home() {
             </p>
           </div>
 
+          {/* Supabase Connection Status */}
           <div className="mb-8">
             <h2 className="text-xl font-bold text-stone-800 mb-3">
               Estado de Conexion
@@ -64,8 +74,8 @@ export default async function Home() {
             <div className="flex items-center gap-3">
               <span className={`inline-block w-3.5 h-3.5 rounded-full ${isConnectionSuccessful ? 'bg-emerald-500' : 'bg-rose-500'}`} />
               <span className="text-stone-700 font-medium">
-                {isConnectionSuccessful
-                  ? 'Conectado exitosamente con Supabase (Desarrollo)'
+                {isConnectionSuccessful 
+                  ? 'Conectado exitosamente con Supabase (Desarrollo)' 
                   : 'Error de conexion o catalogo vacio'}
               </span>
             </div>
@@ -76,6 +86,7 @@ export default async function Home() {
             )}
           </div>
 
+          {/* Catalogs Counts Grid */}
           <div>
             <h2 className="text-xl font-bold text-stone-800 mb-4">
               Resumen de Catalogos Cargados
@@ -109,6 +120,7 @@ export default async function Home() {
           </div>
         </header>
 
+        {/* Section: Instituciones Participantes */}
         <section className="bg-white border border-stone-200 rounded-lg shadow-sm p-8">
           <h2 className="text-2xl font-bold text-stone-900 mb-4 pb-2 border-b border-stone-100">
             Instituciones Participantes
@@ -141,6 +153,7 @@ export default async function Home() {
           )}
         </section>
 
+        {/* Section: Contenidos Culturales */}
         <section className="bg-white border border-stone-200 rounded-lg shadow-sm p-8">
           <h2 className="text-2xl font-bold text-stone-900 mb-4 pb-2 border-b border-stone-100">
             Contenidos Culturales
@@ -178,6 +191,7 @@ export default async function Home() {
           )}
         </section>
 
+        {/* Section: Reconocimientos */}
         <section className="bg-white border border-stone-200 rounded-lg shadow-sm p-8">
           <h2 className="text-2xl font-bold text-stone-900 mb-4 pb-2 border-b border-stone-100">
             Reconocimientos
@@ -215,6 +229,7 @@ export default async function Home() {
           )}
         </section>
 
+        {/* Section: Archivo y Medios */}
         <section className="bg-white border border-stone-200 rounded-lg shadow-sm p-8">
           <h2 className="text-2xl font-bold text-stone-900 mb-4 pb-2 border-b border-stone-100">
             Archivo y Medios
@@ -229,7 +244,7 @@ export default async function Home() {
                       {ma.asset_type}
                     </span>
                     <span className="font-mono">
-                      Archivo publico
+                      {ma.bucket_name}/{ma.storage_path}
                     </span>
                   </div>
                   {ma.alt_text && (
@@ -247,6 +262,7 @@ export default async function Home() {
             </p>
           )}
         </section>
+
       </div>
     </div>
   );

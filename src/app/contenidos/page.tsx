@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getPublishedContentsList } from '../../lib/public-content/public-content';
+import PublicHeader from '../../components/public/PublicHeader';
 
 export default async function ContenidosPage() {
   const contents = await getPublishedContentsList();
@@ -8,16 +9,11 @@ export default async function ContenidosPage() {
     <div className="min-h-screen bg-stone-50 text-stone-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl w-full flex flex-col gap-6">
         
-        {/* Navigation / Header */}
-        <div className="flex justify-between items-center pb-4 border-b border-stone-200">
-          <Link href="/" className="text-stone-500 hover:text-stone-900 font-medium text-sm transition-colors">
-            Volver a la home
-          </Link>
-          <span className="text-xs text-stone-400 font-mono">La Gauchita Federal</span>
-        </div>
+        {/* Navigation Header */}
+        <PublicHeader />
 
         {/* Title */}
-        <div className="py-4">
+        <div className="py-4 border-b border-stone-200">
           <h1 className="text-3xl font-extrabold tracking-tight text-stone-900">
             Contenidos Culturales
           </h1>
