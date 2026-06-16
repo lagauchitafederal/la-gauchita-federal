@@ -60,6 +60,16 @@ export interface PublicMediaAsset {
   sort_order: number;
 }
 
+export interface PublicMediaAssetDetail extends PublicMediaAsset {
+  description: string | null;
+  source_reference: string | null;
+  rights_status: string;
+  visibility: string;
+  status: string;
+  created_at: string;
+}
+
+
 /**
  * Fetches published contents for homepage (limit 6). RLS filters published, public and active contents.
  */
@@ -303,3 +313,28 @@ export async function getPublicMediaAssets(): Promise<PublicMediaAsset[]> {
     return [];
   }
 }
+
+/**
+ * Fetches the full list of public media assets (limit 100). RLS filters active and public media assets.
+ */
+export async function getPublicMediaAssetsList(): Promise<PublicMediaAssetDetail[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('media_assets')
+      .select('title, description, asset_type, bucket_name, storage_path, alt_text, credit, source_reference, rights_status, visibility, status, sort_order, created_at')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('Error fetching public media assets list:', error);
+      return [];
+    }
+    return (data as PublicMediaAssetDetail[]) || [];
+  } catch (err) {
+    console.error('Unexpected error fetching public media assets list:', err);
+    return [];
+  }
+}
+

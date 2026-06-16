@@ -21,6 +21,9 @@ export default function PublicHeader() {
         <Link href="/reconocimientos" className="hover:text-stone-900 transition-colors">
           Reconocimientos
         </Link>
+        <Link href="/archivo" className="hover:text-stone-900 transition-colors">
+          Archivo
+        </Link>
       </nav>
     </header>
   );
