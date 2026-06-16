@@ -15,6 +15,7 @@ import {
   getPublicMediaAssets
 } from '../lib/public-content/public-content';
 import PublicPageShell from '../components/public/PublicPageShell';
+import { formatInstitutionType } from '../lib/utils/formatters';
 
 export const metadata: Metadata = {
   title: 'La Gauchita Federal',
@@ -80,11 +81,11 @@ export default async function Home() {
               <span className="text-3xl font-extrabold text-stone-900">{contentTypes.length}</span>
             </div>
             <div className="bg-stone-50 p-4 rounded-md border border-stone-200/60">
-              <span className="block text-sm text-stone-500 font-medium">Categorias</span>
+              <span className="block text-sm text-stone-500 font-medium">Categorías</span>
               <span className="text-3xl font-extrabold text-stone-900">{categories.length}</span>
             </div>
             <div className="bg-stone-50 p-4 rounded-md border border-stone-200/60">
-              <span className="block text-sm text-stone-500 font-medium">Niveles de Membresia</span>
+              <span className="block text-sm text-stone-500 font-medium">Niveles de Membrería</span>
               <span className="text-3xl font-extrabold text-stone-900">{membershipLevels.length}</span>
             </div>
           </div>
@@ -150,7 +151,7 @@ export default async function Home() {
                   )}
                 </div>
                 <span className="text-xs text-stone-500 font-semibold tracking-wider uppercase">
-                  {inst.institution_type}
+                  {formatInstitutionType(inst.institution_type)}
                 </span>
                 {inst.description && (
                   <p className="text-sm text-stone-600 line-clamp-2">{inst.description}</p>
@@ -197,7 +198,7 @@ export default async function Home() {
           </div>
         ) : (
           <p className="text-stone-500 text-sm italic py-4">
-            Aun no hay contenidos publicados.
+            Aún no hay contenidos publicados.
           </p>
         )}
       </section>
@@ -234,7 +235,7 @@ export default async function Home() {
           </div>
         ) : (
           <p className="text-stone-500 text-sm italic py-4">
-            Aun no hay reconocimientos publicos cargados.
+            Aún no hay reconocimientos públicos cargados.
           </p>
         )}
       </section>
@@ -257,14 +258,14 @@ export default async function Home() {
                   <p className="text-xs text-stone-500">Alt: {ma.alt_text}</p>
                 )}
                 {ma.credit && (
-                  <p className="text-xs text-stone-400">Credito: {ma.credit}</p>
+                  <p className="text-xs text-stone-400">Crédito: {ma.credit}</p>
                 )}
               </div>
             ))}
           </div>
         ) : (
           <p className="text-stone-500 text-sm italic py-4">
-            Aun no hay medios publicos cargados.
+            Aún no hay medios públicos cargados.
           </p>
         )}
       </section>
