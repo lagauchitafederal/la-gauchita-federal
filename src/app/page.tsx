@@ -14,6 +14,7 @@ import {
 } from '../lib/public-content/public-content';
 import { checkSupabaseEnvironment } from '../lib/supabase/healthcheck';
 import PublicPageShell from '../components/public/PublicPageShell';
+import Link from 'next/link';
 
 export default async function Home() {
   const envCheck = checkSupabaseEnvironment();
@@ -114,6 +115,49 @@ export default async function Home() {
             </div>
           </div>
         </header>
+
+        {/* Portada Navigation Grid */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Link href="/contenidos" className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 hover:border-stone-400 transition-colors flex flex-col gap-2">
+            <h3 className="font-bold text-stone-900 text-lg">Contenidos</h3>
+            <p className="text-sm text-stone-600">
+              Explora las efemerides, historias y tradiciones federales de nuestro pais.
+            </p>
+            <span className="text-xs font-bold text-stone-800 mt-auto font-mono flex items-center gap-1">
+              Ingresar &rarr;
+            </span>
+          </Link>
+
+          <Link href="/instituciones" className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 hover:border-stone-400 transition-colors flex flex-col gap-2">
+            <h3 className="font-bold text-stone-900 text-lg">Instituciones</h3>
+            <p className="text-sm text-stone-600">
+              Conoce los organismos y espacios culturales que fortalecen la memoria federal.
+            </p>
+            <span className="text-xs font-bold text-stone-800 mt-auto font-mono flex items-center gap-1">
+              Ingresar &rarr;
+            </span>
+          </Link>
+
+          <Link href="/reconocimientos" className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 hover:border-stone-400 transition-colors flex flex-col gap-2">
+            <h3 className="font-bold text-stone-900 text-lg">Reconocimientos</h3>
+            <p className="text-sm text-stone-600">
+              Premios, menciones y distinciones que avalan la trayectoria de nuestro proyecto.
+            </p>
+            <span className="text-xs font-bold text-stone-800 mt-auto font-mono flex items-center gap-1">
+              Ingresar &rarr;
+            </span>
+          </Link>
+
+          <Link href="/archivo" className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 hover:border-stone-400 transition-colors flex flex-col gap-2">
+            <h3 className="font-bold text-stone-900 text-lg">Archivo y Medios</h3>
+            <p className="text-sm text-stone-600">
+              Fotografias, documentos y portadas historicas vinculadas al patrimonio.
+            </p>
+            <span className="text-xs font-bold text-stone-800 mt-auto font-mono flex items-center gap-1">
+              Ingresar &rarr;
+            </span>
+          </Link>
+        </section>
 
         {/* Section: Instituciones Participantes */}
         <section className="bg-white border border-stone-200 rounded-lg shadow-sm p-8">
@@ -237,9 +281,6 @@ export default async function Home() {
                   <div className="flex flex-wrap gap-2 text-xs text-stone-500">
                     <span className="bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
                       {ma.asset_type}
-                    </span>
-                    <span className="font-mono">
-                      {ma.bucket_name}/{ma.storage_path}
                     </span>
                   </div>
                   {ma.alt_text && (
