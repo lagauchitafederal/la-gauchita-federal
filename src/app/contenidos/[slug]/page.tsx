@@ -2,9 +2,26 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPublishedContentBySlug } from '../../../lib/public-content/public-content';
 import PublicPageShell from '../../../components/public/PublicPageShell';
+import type { Metadata } from 'next';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const content = await getPublishedContentBySlug(slug);
+
+  if (!content) {
+    return {
+      title: "Contenido no encontrado",
+    };
+  }
+
+  return {
+    title: content.title,
+    description: content.summary || content.subtitle || undefined,
+  };
 }
 
 export default async function ContentDetailPage({ params }: PageProps) {

@@ -2,6 +2,12 @@ import Link from 'next/link';
 import { getPublishedContentsList } from '../../lib/public-content/public-content';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Contenidos culturales",
+  description: "Explora las efemerides, historias y tradiciones federales de nuestro pais.",
+};
 
 export default async function ContenidosPage() {
   const contents = await getPublishedContentsList();

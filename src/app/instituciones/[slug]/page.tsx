@@ -2,9 +2,26 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getActiveInstitutionBySlug } from '../../../lib/public-content/public-content';
 import PublicPageShell from '../../../components/public/PublicPageShell';
+import type { Metadata } from 'next';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const inst = await getActiveInstitutionBySlug(slug);
+
+  if (!inst) {
+    return {
+      title: "Institucion no encontrada",
+    };
+  }
+
+  return {
+    title: inst.name,
+    description: inst.description || undefined,
+  };
 }
 
 export default async function InstitutionDetailPage({ params }: PageProps) {

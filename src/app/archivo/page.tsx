@@ -1,6 +1,12 @@
 import { getPublicMediaAssetsList } from '../../lib/public-content/public-content';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Archivo y medios",
+  description: "Fotografias, documentos, portadas y materiales de archivo vinculados al patrimonio cultural federal.",
+};
 
 export default async function ArchivoPage() {
   const mediaAssets = await getPublicMediaAssetsList();

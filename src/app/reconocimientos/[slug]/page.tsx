@@ -2,9 +2,26 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getActiveRecognitionBySlug } from '../../../lib/public-content/public-content';
 import PublicPageShell from '../../../components/public/PublicPageShell';
+import type { Metadata } from 'next';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const r = await getActiveRecognitionBySlug(slug);
+
+  if (!r) {
+    return {
+      title: "Reconocimiento no encontrado",
+    };
+  }
+
+  return {
+    title: r.title,
+    description: r.description || undefined,
+  };
 }
 
 export default async function RecognitionDetailPage({ params }: PageProps) {

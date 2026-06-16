@@ -2,6 +2,12 @@ import Link from 'next/link';
 import { getActiveRecognitionsList } from '../../lib/public-content/public-content';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Reconocimientos",
+  description: "Premios, menciones y distinciones que fortalecen la trayectoria cultural del proyecto.",
+};
 
 export default async function ReconocimientosPage() {
   const recognitions = await getActiveRecognitionsList();

@@ -14,6 +14,12 @@ import {
 } from '../lib/public-content/public-content';
 import { checkSupabaseEnvironment } from '../lib/supabase/healthcheck';
 import PublicPageShell from '../components/public/PublicPageShell';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "La Gauchita Federal",
+  description: "Donde late la historia de cada argentino. Conectando regiones, provincias y municipios.",
+};
 import Link from 'next/link';
 
 export default async function Home() {

@@ -2,6 +2,12 @@ import Link from 'next/link';
 import { getActiveInstitutionsList } from '../../lib/public-content/public-content';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Instituciones participantes",
+  description: "Contamos con la participacion de instituciones, organismos y espacios culturales que fortalecen la memoria federal.",
+};
 
 export default async function InstitucionesPage() {
   const institutions = await getActiveInstitutionsList();
