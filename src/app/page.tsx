@@ -60,7 +60,7 @@ export default async function Home() {
 
         <div>
           <h2 className="text-xl font-bold text-stone-800 mb-4">
-            Resumen de Catalogos Cargados
+            Resumen de catálogos cargados
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="bg-stone-50 p-4 rounded-md border border-stone-200/60">
@@ -95,7 +95,7 @@ export default async function Home() {
         <Link href="/contenidos" className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 hover:border-stone-400 transition-colors flex flex-col gap-2">
           <h3 className="font-bold text-stone-900 text-lg">Contenidos</h3>
           <p className="text-sm text-stone-600">
-            Explora las efemerides, historias y tradiciones federales de nuestro pais.
+            Explorá las efemérides, historias y tradiciones federales de nuestro país.
           </p>
           <span className="text-xs font-bold text-stone-800 mt-auto font-mono flex items-center gap-1">
             Ingresar &rarr;
@@ -125,7 +125,7 @@ export default async function Home() {
         <Link href="/archivo" className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 hover:border-stone-400 transition-colors flex flex-col gap-2">
           <h3 className="font-bold text-stone-900 text-lg">Archivo y Medios</h3>
           <p className="text-sm text-stone-600">
-            Fotografias, documentos y portadas historicas vinculadas al patrimonio.
+            Fotografías, documentos y portadas históricas vinculadas al patrimonio.
           </p>
           <span className="text-xs font-bold text-stone-800 mt-auto font-mono flex items-center gap-1">
             Ingresar &rarr;
@@ -160,7 +160,7 @@ export default async function Home() {
           </div>
         ) : (
           <p className="text-stone-500 text-sm italic py-4">
-            Aun no hay instituciones activas cargadas.
+            Aún no hay instituciones activas cargadas.
           </p>
         )}
       </section>
