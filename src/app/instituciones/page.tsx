@@ -1,26 +1,17 @@
 import Link from 'next/link';
 import { getActiveInstitutionsList } from '../../lib/public-content/public-content';
-import PublicHeader from '../../components/public/PublicHeader';
+import PublicPageShell from '../../components/public/PublicPageShell';
+import PublicSectionHeader from '../../components/public/PublicSectionHeader';
 
 export default async function InstitucionesPage() {
   const institutions = await getActiveInstitutionsList();
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl w-full flex flex-col gap-6">
-        
-        {/* Navigation Header */}
-        <PublicHeader />
-
-        {/* Title */}
-        <div className="py-4 border-b border-stone-200">
-          <h1 className="text-3xl font-extrabold tracking-tight text-stone-900">
-            Instituciones Participantes
-          </h1>
-          <p className="text-sm text-stone-500 mt-1 leading-relaxed">
-            Contamos con la participacion de instituciones, organismos y espacios culturales que fortalecen la memoria federal.
-          </p>
-        </div>
+    <PublicPageShell>
+      <PublicSectionHeader
+        title="Instituciones Participantes"
+        description="Contamos con la participacion de instituciones, organismos y espacios culturales que fortalecen la memoria federal."
+      />
 
         {/* Institutions List */}
         {institutions.length > 0 ? (
@@ -63,7 +54,6 @@ export default async function InstitucionesPage() {
             </p>
           </div>
         )}
-      </div>
-    </div>
+    </PublicPageShell>
   );
 }

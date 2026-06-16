@@ -13,7 +13,7 @@ import {
   getPublicMediaAssets
 } from '../lib/public-content/public-content';
 import { checkSupabaseEnvironment } from '../lib/supabase/healthcheck';
-import PublicHeader from '../components/public/PublicHeader';
+import PublicPageShell from '../components/public/PublicPageShell';
 
 export default async function Home() {
   const envCheck = checkSupabaseEnvironment();
@@ -48,14 +48,9 @@ export default async function Home() {
   const isConnectionSuccessful = envCheck.status === 'ok' && dbConnected;
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl w-full flex flex-col gap-8">
-        
-        {/* Navigation Header */}
-        <PublicHeader />
-
-        {/* Core Control Center Box */}
-        <header className="bg-white border border-stone-200 rounded-lg shadow-sm p-8 md:p-12">
+    <PublicPageShell maxWidth="max-w-4xl">
+      {/* Core Control Center Box */}
+      <header className="bg-white border border-stone-200 rounded-lg shadow-sm p-8 md:p-12">
           {/* Header */}
           <div className="border-b border-stone-100 pb-6 mb-8 text-center sm:text-left">
             <h1 className="text-4xl font-extrabold tracking-tight text-stone-900 mb-2">
@@ -263,7 +258,6 @@ export default async function Home() {
           )}
         </section>
 
-      </div>
-    </div>
+    </PublicPageShell>
   );
 }

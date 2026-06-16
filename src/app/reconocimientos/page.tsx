@@ -1,26 +1,17 @@
 import Link from 'next/link';
 import { getActiveRecognitionsList } from '../../lib/public-content/public-content';
-import PublicHeader from '../../components/public/PublicHeader';
+import PublicPageShell from '../../components/public/PublicPageShell';
+import PublicSectionHeader from '../../components/public/PublicSectionHeader';
 
 export default async function ReconocimientosPage() {
   const recognitions = await getActiveRecognitionsList();
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl w-full flex flex-col gap-6">
-        
-        {/* Navigation Header */}
-        <PublicHeader />
-
-        {/* Title */}
-        <div className="py-4 border-b border-stone-200">
-          <h1 className="text-3xl font-extrabold tracking-tight text-stone-900">
-            Reconocimientos
-          </h1>
-          <p className="text-sm text-stone-500 mt-1 leading-relaxed">
-            Premios, menciones y distinciones que fortalecen la trayectoria cultural del proyecto.
-          </p>
-        </div>
+    <PublicPageShell>
+      <PublicSectionHeader
+        title="Reconocimientos"
+        description="Premios, menciones y distinciones que fortalecen la trayectoria cultural del proyecto."
+      />
 
         {/* Recognitions List */}
         {recognitions.length > 0 ? (
@@ -68,7 +59,6 @@ export default async function ReconocimientosPage() {
             </p>
           </div>
         )}
-      </div>
-    </div>
+    </PublicPageShell>
   );
 }

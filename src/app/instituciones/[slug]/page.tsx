@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getActiveInstitutionBySlug } from '../../../lib/public-content/public-content';
-import PublicHeader from '../../../components/public/PublicHeader';
+import PublicPageShell from '../../../components/public/PublicPageShell';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -16,13 +16,8 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl w-full flex flex-col gap-6">
-        
-        {/* Navigation Header */}
-        <PublicHeader />
-
-        <div className="bg-white border border-stone-200 rounded-lg shadow-sm p-8 md:p-12 flex flex-col gap-6">
+    <PublicPageShell>
+      <div className="bg-white border border-stone-200 rounded-lg shadow-sm p-8 md:p-12 flex flex-col gap-6">
           
           {/* Navigation / Header */}
           <div className="flex justify-between items-center pb-4 border-b border-stone-200">
@@ -102,8 +97,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
             </dl>
           </div>
 
-        </div>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }
