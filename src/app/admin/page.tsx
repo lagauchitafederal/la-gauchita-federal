@@ -65,7 +65,7 @@ export default function AdminPage() {
       {/* Bottom informational note */}
       <div className="bg-stone-100 border border-stone-200 rounded-lg p-5 mt-auto">
         <p className="text-xs text-stone-500 font-mono leading-relaxed">
-          Nota técnica: La protección de acceso y la integración con el sistema de autenticación de Supabase (Auth) serán incorporadas en la siguiente etapa del desarrollo.
+          Nota técnica: La protección de acceso y el control de roles por Supabase Auth están activos en este panel.
         </p>
       </div>
 

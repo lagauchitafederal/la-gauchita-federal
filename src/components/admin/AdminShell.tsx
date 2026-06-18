@@ -1,11 +1,28 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabaseClient } from '../../lib/supabase/client';
 
 interface AdminShellProps {
   children: React.ReactNode;
 }
 
 export default function AdminShell({ children }: AdminShellProps) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+      // Clear the access token cookie
+      document.cookie = 'sb-access-token=; path=/; max-age=0; SameSite=Lax; Secure';
+      router.push('/login');
+    } catch (err) {
+      console.error('Error closing session:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-charcoal font-sans flex flex-col md:flex-row">
       
@@ -65,10 +82,17 @@ export default function AdminShell({ children }: AdminShellProps) {
 
           <Link
             href="/"
-            className="flex items-center px-4 py-2.5 rounded-md text-xs uppercase tracking-wider font-bold text-earth-red hover:bg-stone-800 hover:text-earth-red/90 transition-colors duration-200"
+            className="flex items-center px-4 py-2.5 rounded-md text-xs uppercase tracking-wider font-bold text-stone-400 hover:bg-stone-800 hover:text-white transition-colors duration-200"
           >
             Volver al portal público &rarr;
           </Link>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full text-left px-4 py-2.5 rounded-md text-xs uppercase tracking-wider font-bold text-earth-red hover:bg-stone-800 hover:text-earth-red/90 transition-colors duration-200"
+          >
+            Cerrar Sesión
+          </button>
         </nav>
 
         {/* Footer Info */}
