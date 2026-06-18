@@ -50,50 +50,67 @@ export default async function Home() {
 
   return (
     <PublicPageShell maxWidth="max-w-4xl">
-      <header className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col gap-8">
-        <div className="border-b border-stone-beige/80 pb-6 text-center sm:text-left flex flex-col gap-2">
-          <h1 className="text-3xl sm:text-4xl font-serif font-black tracking-tight text-charcoal">
-            La Gauchita Federal
-          </h1>
-          <p className="text-base text-stone-600 font-medium italic">
-            "Donde late la historia de cada argentino"
+      {/* 1. Hero Institucional */}
+      <header className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col lg:flex-row gap-8 lg:items-center">
+        <div className="flex-1 flex flex-col gap-6 text-left">
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-earth-red">
+              Portal Federal
+            </span>
+            <h1 className="text-4xl md:text-5xl font-serif font-black tracking-tight text-charcoal">
+              La Gauchita Federal
+            </h1>
+            <p className="text-lg text-stone-750 font-serif font-bold italic leading-relaxed">
+              Archivo vivo de historia, cultura y memoria federal andina.
+            </p>
+          </div>
+          
+          <p className="text-sm text-stone-650 leading-relaxed">
+            Una plataforma impulsada por el Instituto Cultural Andino y la Revista La Gauchita para reunir contenidos, instituciones, reconocimientos y materiales de archivo vinculados a la identidad cultural del norte argentino.
           </p>
+
+          <div className="flex flex-wrap gap-4 mt-2">
+            <Link
+              href="/contenidos"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-earth-red text-white text-xs uppercase tracking-wider font-bold rounded-md hover:bg-earth-red/90 transition-colors duration-200"
+            >
+              Explorar contenidos
+            </Link>
+            <Link
+              href="/archivo"
+              className="inline-flex items-center justify-center px-5 py-2.5 border border-stone-beige text-xs uppercase tracking-wider font-bold rounded-md text-stone-700 bg-white hover:bg-stone-50 hover:text-earth-red transition-all duration-200"
+            >
+              Ver archivo documental
+            </Link>
+          </div>
         </div>
 
-        <div>
-          <h2 className="text-base font-serif font-bold text-charcoal mb-4 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Resumen de catálogos cargados
+        <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4">
+          <h2 className="text-[11px] font-bold uppercase tracking-widest text-stone-500 border-b border-stone-beige/60 pb-2">
+            Catálogo del Patrimonio
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="bg-[#fcf8f2] p-4 rounded-md border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
-              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Regiones</span>
-              <span className="text-3xl font-serif font-black text-earth-red">{regions.length}</span>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#fcf8f2] p-4 rounded-lg border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
+              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Contenidos</span>
+              <span className="text-2xl font-serif font-black text-earth-red">{contents.length}</span>
             </div>
-            <div className="bg-[#fcf8f2] p-4 rounded-md border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
-              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Provincias</span>
-              <span className="text-3xl font-serif font-black text-earth-red">{provinces.length}</span>
+            <div className="bg-[#fcf8f2] p-4 rounded-lg border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
+              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Instituciones</span>
+              <span className="text-2xl font-serif font-black text-earth-red">{institutions.length}</span>
             </div>
-            <div className="bg-[#fcf8f2] p-4 rounded-md border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
-              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Municipios</span>
-              <span className="text-3xl font-serif font-black text-earth-red">{municipalities.length}</span>
+            <div className="bg-[#fcf8f2] p-4 rounded-lg border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
+              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Avales</span>
+              <span className="text-2xl font-serif font-black text-earth-red">{recognitions.length}</span>
             </div>
-            <div className="bg-[#fcf8f2] p-4 rounded-md border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
-              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Tipos de Contenido</span>
-              <span className="text-3xl font-serif font-black text-earth-red">{contentTypes.length}</span>
-            </div>
-            <div className="bg-[#fcf8f2] p-4 rounded-md border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
-              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Categorías</span>
-              <span className="text-3xl font-serif font-black text-earth-red">{categories.length}</span>
-            </div>
-            <div className="bg-[#fcf8f2] p-4 rounded-md border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
-              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Niveles de Membrería</span>
-              <span className="text-3xl font-serif font-black text-earth-red">{membershipLevels.length}</span>
+            <div className="bg-[#fcf8f2] p-4 rounded-lg border border-stone-beige/80 hover:border-muted-amber transition-colors duration-200">
+              <span className="block text-[10px] text-stone-500 font-bold uppercase tracking-wider">Archivos</span>
+              <span className="text-2xl font-serif font-black text-earth-red">{mediaAssets.length}</span>
             </div>
           </div>
         </div>
       </header>
 
+      {/* 2. Franja de accesos rápidos */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Link href="/contenidos" className="bg-warm-white border border-stone-beige rounded-lg p-6 hover:border-muted-amber hover:bg-[#fcfbf9] transition-all duration-300 flex flex-col gap-2 group">
           <h3 className="font-serif font-bold text-charcoal text-lg group-hover:text-earth-red transition-colors duration-200">Contenidos</h3>
@@ -136,16 +153,81 @@ export default async function Home() {
         </Link>
       </section>
 
-      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8">
-        <h2 className="text-2xl font-serif font-black text-charcoal mb-6 pb-3 border-b border-stone-beige/85">
-          Instituciones Participantes
-        </h2>
+      {/* 3. Sección Contenidos Destacados */}
+      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
+        <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
+          <h2 className="text-2xl font-serif font-black text-charcoal">
+            Contenidos Destacados
+          </h2>
+          <Link href="/contenidos" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+            Ver todos &rarr;
+          </Link>
+        </div>
+        
+        {contents.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {contents.slice(0, 4).map((c) => (
+              <div key={c.slug} className="p-6 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
+                <div className="flex justify-between items-start gap-4">
+                  <h3 className="font-serif font-bold text-lg text-charcoal hover:text-earth-red transition-colors">
+                    <Link href={`/contenidos/${c.slug}`}>
+                      {c.title}
+                    </Link>
+                  </h3>
+                  {c.is_featured && (
+                    <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
+                      Destacado
+                    </span>
+                  )}
+                </div>
+                {c.subtitle && (
+                  <p className="text-sm font-semibold text-stone-700 italic">{c.subtitle}</p>
+                )}
+                {c.summary && (
+                  <p className="text-sm text-stone-700 leading-relaxed">{c.summary}</p>
+                )}
+                <div className="flex flex-wrap items-center gap-4 text-[11px] text-stone-500 font-mono mt-1 pt-3 border-t border-stone-beige/50">
+                  {c.publish_date && (
+                    <span>Publicado: {new Date(c.publish_date).toLocaleDateString()}</span>
+                  )}
+                  {c.event_date && (
+                    <span>Hito Histórico: {new Date(c.event_date).toLocaleDateString()}</span>
+                  )}
+                  <Link href={`/contenidos/${c.slug}`} className="text-earth-red hover:underline font-bold ml-auto uppercase tracking-wider text-[10px] font-mono">
+                    Leer más &rarr;
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-stone-500 text-sm italic py-4">
+            Aún no hay contenidos publicados.
+          </p>
+        )}
+      </section>
+
+      {/* 4. Sección "Contamos con la participación de..." */}
+      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
+        <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
+          <h2 className="text-2xl font-serif font-black text-charcoal">
+            Entidades Participantes
+          </h2>
+          <Link href="/instituciones" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+            Ver todas &rarr;
+          </Link>
+        </div>
+        
         {institutions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {institutions.map((inst) => (
+            {institutions.slice(0, 4).map((inst) => (
               <div key={inst.slug} className="p-5 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-2.5 hover:border-muted-amber transition-colors duration-200">
                 <div className="flex justify-between items-start gap-2">
-                  <h3 className="font-serif font-bold text-charcoal text-base">{inst.name}</h3>
+                  <h3 className="font-serif font-bold text-charcoal text-base hover:text-earth-red transition-colors">
+                    <Link href={`/instituciones/${inst.slug}`}>
+                      {inst.name}
+                    </Link>
+                  </h3>
                   {inst.is_featured && (
                     <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
                       Destacada
@@ -168,67 +250,36 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8">
-        <h2 className="text-2xl font-serif font-black text-charcoal mb-6 pb-3 border-b border-stone-beige/85">
-          Contenidos Culturales
-        </h2>
-        {contents.length > 0 ? (
-          <div className="flex flex-col gap-4">
-            {contents.map((c) => (
-              <div key={c.slug} className="p-6 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
-                <div className="flex justify-between items-start gap-4">
-                  <h3 className="font-serif font-bold text-lg text-charcoal">{c.title}</h3>
-                  {c.is_featured && (
-                    <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
-                      Destacado
-                    </span>
-                  )}
-                </div>
-                {c.subtitle && (
-                  <p className="text-sm font-semibold text-stone-700 italic">{c.subtitle}</p>
-                )}
-                {c.summary && (
-                  <p className="text-sm text-stone-700 leading-relaxed">{c.summary}</p>
-                )}
-                {c.publish_date && (
-                  <span className="text-[11px] text-stone-500 font-mono mt-1 flex items-center gap-1">
-                    Publicado: {new Date(c.publish_date).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-stone-500 text-sm italic py-4">
-            Aún no hay contenidos publicados.
-          </p>
-        )}
-      </section>
+      {/* 5. Sección Reconocimientos */}
+      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
+        <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
+          <h2 className="text-2xl font-serif font-black text-charcoal">
+            Trayectoria y Avales
+          </h2>
+          <Link href="/reconocimientos" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+            Ver todos &rarr;
+          </Link>
+        </div>
 
-      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8">
-        <h2 className="text-2xl font-serif font-black text-charcoal mb-6 pb-3 border-b border-stone-beige/85">
-          Reconocimientos
-        </h2>
         {recognitions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {recognitions.map((r) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {recognitions.slice(0, 3).map((r) => (
               <div key={r.slug} className="p-5 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-2.5 hover:border-muted-amber transition-colors duration-200">
                 <div className="flex justify-between items-start gap-2">
-                  <h3 className="font-serif font-bold text-charcoal text-base">{r.title}</h3>
-                  {r.is_featured && (
-                    <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
-                      Destacado
-                    </span>
-                  )}
+                  <h3 className="font-serif font-bold text-charcoal text-sm hover:text-earth-red transition-colors line-clamp-2">
+                    <Link href={`/reconocimientos/${r.slug}`}>
+                      {r.title}
+                    </Link>
+                  </h3>
                 </div>
                 <span className="text-[10px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 self-start tracking-wider uppercase">
                   {r.recognition_type}
                 </span>
                 {r.description && (
-                  <p className="text-sm text-stone-700 leading-relaxed">{r.description}</p>
+                  <p className="text-xs text-stone-700 leading-relaxed line-clamp-3">{r.description}</p>
                 )}
                 {r.recognition_date && (
-                  <span className="text-[11px] text-stone-500 font-mono mt-1 flex items-center gap-1">
+                  <span className="text-[10px] text-stone-500 font-mono mt-auto pt-1.5 flex items-center gap-1">
                     Fecha: {new Date(r.recognition_date).toLocaleDateString()}
                   </span>
                 )}
@@ -242,10 +293,17 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8">
-        <h2 className="text-2xl font-serif font-black text-charcoal mb-6 pb-3 border-b border-stone-beige/85">
-          Archivo y Medios
-        </h2>
+      {/* 6. Sección Archivo Documental */}
+      <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
+        <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
+          <h2 className="text-2xl font-serif font-black text-charcoal">
+            Archivo Documental
+          </h2>
+          <Link href="/archivo" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+            Explorar archivo &rarr;
+          </Link>
+        </div>
+
         {mediaAssets.length > 0 ? (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -307,17 +365,33 @@ export default async function Home() {
                 );
               })}
             </div>
-            <div className="mt-8 text-center">
-              <Link href="/archivo" className="inline-flex items-center justify-center px-5 py-2.5 border border-stone-beige text-xs uppercase tracking-wider font-bold rounded-md text-stone-700 bg-white hover:bg-stone-50 hover:text-earth-red transition-all duration-200 shadow-sm gap-2">
-                Ver archivo completo &rarr;
-              </Link>
-            </div>
           </div>
         ) : (
           <p className="text-stone-500 text-sm italic py-4">
             Aún no hay medios públicos cargados.
           </p>
         )}
+      </section>
+
+      {/* 7. Cierre Institucional */}
+      <section className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 text-center flex flex-col items-center gap-6">
+        <div className="flex flex-col gap-2 max-w-xl">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-earth-red">
+            Conexión Federal
+          </span>
+          <h2 className="text-2xl md:text-3xl font-serif font-black text-charcoal">
+            Formar parte de La Gauchita Federal
+          </h2>
+          <p className="text-sm text-stone-600 leading-relaxed mt-2">
+            El portal se proyecta como una red de contenidos, instituciones y archivos que fortalece la memoria cultural de cada comunidad.
+          </p>
+        </div>
+        <Link
+          href="/acerca"
+          className="inline-flex items-center justify-center px-6 py-3 bg-earth-red text-white text-xs uppercase tracking-wider font-bold rounded-md hover:bg-earth-red/90 transition-colors duration-200"
+        >
+          Conocer el proyecto
+        </Link>
       </section>
     </PublicPageShell>
   );
