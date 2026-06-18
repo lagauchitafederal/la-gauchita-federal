@@ -22,7 +22,7 @@ export default function AcercaPage() {
             Origen y propósito
           </h2>
           <p className="text-sm text-stone-700 leading-relaxed">
-            La Gauchita Federal nace como una iniciativa de digitalización, organización y puesta en valor del patrimonio cultural e histórico argentino. Nuestro propósito central es conectar la historia local de cada región, provincia y municipio, integrando esfuerzos institucionales y comunitarios para salvaguardar la memoria colectiva del país.
+            La Gauchita Federal nace como una iniciativa de digitalización, organización y puesta en valor del patrimonio cultural e histórico argentino. Nuestro propósito central es conectar la historia local de cada región, provincia y municipio, reuniendo contenidos, instituciones participantes y referencias documentales de entidades vinculadas al patrimonio cultural para salvaguardar la memoria colectiva del país.
           </p>
         </section>
 

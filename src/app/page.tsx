@@ -125,7 +125,7 @@ export default async function Home() {
         <Link href="/instituciones" className="bg-warm-white border border-stone-beige rounded-lg p-6 hover:border-muted-amber hover:bg-[#fcfbf9] transition-all duration-300 flex flex-col gap-2 group">
           <h3 className="font-serif font-bold text-charcoal text-lg group-hover:text-earth-red transition-colors duration-200">Instituciones</h3>
           <p className="text-sm text-stone-700 leading-relaxed">
-            Conoce los organismos y espacios culturales que fortalecen la memoria federal.
+            Conoce las instituciones participantes y las entidades vinculadas a nuestro archivo.
           </p>
           <span className="text-xs font-bold text-earth-red mt-auto font-mono flex items-center gap-1 uppercase tracking-wider">
             Ingresar &rarr;
@@ -211,7 +211,7 @@ export default async function Home() {
       <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
         <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
           <h2 className="text-2xl font-serif font-black text-charcoal">
-            Entidades Participantes
+            Instituciones participantes y vinculadas al archivo
           </h2>
           <Link href="/instituciones" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
             Ver todas &rarr;

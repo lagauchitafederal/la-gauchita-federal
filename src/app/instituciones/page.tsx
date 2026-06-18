@@ -6,8 +6,8 @@ import type { Metadata } from 'next';
 import { formatInstitutionType } from '../../lib/utils/formatters';
 
 export const metadata: Metadata = {
-  title: "Instituciones participantes",
-  description: "Contamos con la participación de instituciones, organismos y espacios culturales que fortalecen la memoria federal.",
+  title: "Red cultural e institucional",
+  description: "Listado de instituciones participantes, entidades de la sociedad civil y espacios vinculados al archivo documental de La Gauchita Federal.",
 };
 
 export default async function InstitucionesPage() {
@@ -16,8 +16,8 @@ export default async function InstitucionesPage() {
   return (
     <PublicPageShell>
       <PublicSectionHeader
-        title="Instituciones Participantes"
-        description="Contamos con la participación de instituciones, organismos y espacios culturales que fortalecen la memoria federal."
+        title="Red cultural e institucional"
+        description="Instituciones participantes, organismos públicos, archivos, bibliotecas, museos y entidades culturales vinculadas a los documentos y reconocimientos de La Gauchita Federal."
       />
 
         {institutions.length > 0 ? (
