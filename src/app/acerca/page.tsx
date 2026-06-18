@@ -15,66 +15,84 @@ export default function AcercaPage() {
         description="Una plataforma cultural para preservar, organizar y difundir la memoria histórica y el patrimonio federal argentino."
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+      {/* Presentación Institucional Principal */}
+      <div className="flex flex-col gap-8 mt-4">
+        
+        {/* Bloque 1: Qué es La Gauchita Federal */}
         <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
           <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Origen y propósito
+            Qué es La Gauchita Federal
           </h2>
           <p className="text-sm text-stone-700 leading-relaxed">
-            La Gauchita Federal nace como una iniciativa de digitalización, organización y puesta en valor del patrimonio cultural e histórico argentino. Nuestro propósito central es conectar la historia local de cada región, provincia y municipio, reuniendo contenidos, instituciones participantes y referencias documentales de entidades vinculadas al patrimonio cultural para salvaguardar la memoria colectiva del país.
+            La Gauchita Federal es un portal cultural e histórico impulsado por el Instituto Cultural Andino y la Revista La Gauchita, orientado a reunir, preservar y difundir contenidos vinculados a la memoria cultural, histórica y documental del norte argentino y del ámbito federal andino.
+          </p>
+          <p className="text-sm text-stone-700 leading-relaxed font-medium italic">
+            La Gauchita Federal busca rescatar el pasado, ordenar la memoria disponible y construir un puente entre archivo, comunidad y futuro.
           </p>
         </section>
 
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-          <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Instituto Cultural Andino
-          </h2>
-          <p className="text-sm text-stone-700 leading-relaxed">
-            El Instituto Cultural Andino es un pilar fundamental en la investigación y promoción de las tradiciones, el folklore y el patrimonio cultural del norte argentino. Mediante este portal, colabora de manera activa en la difusión de materiales y documentos valiosos para docentes, investigadores y estudiantes.
-          </p>
-        </section>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Bloque 2: Qué reúne la plataforma */}
+          <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
+            <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
+              Qué reúne la plataforma
+            </h2>
+            <p className="text-sm text-stone-700 leading-relaxed">
+              La plataforma integra artículos, efemérides, notas culturales, instituciones participantes o vinculadas al archivo, reconocimientos, materiales documentales e imágenes de valor histórico. Su propósito es ofrecer un espacio digital sobrio, accesible y organizado, donde la trayectoria de La Gauchita y el trabajo cultural de Eduardo Ceballos puedan proyectarse hacia nuevas comunidades, instituciones, docentes, investigadores y lectores interesados en el patrimonio regional.
+            </p>
+          </section>
 
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-          <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Revista La Gauchita
-          </h2>
-          <p className="text-sm text-stone-700 leading-relaxed">
-            Con una larga trayectoria en la comunicación cultural e histórica, Revista La Gauchita ha sido un medio clave para registrar testimonios, crónicas, efemérides y expresiones artísticas. Este portal representa su evolución digital, ampliando su alcance para abrazar un carácter plenamente federal.
-          </p>
-        </section>
+          {/* Bloque 3: Una red cultural en construcción */}
+          <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
+            <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
+              Una red cultural en construcción
+            </h2>
+            <p className="text-sm text-stone-700 leading-relaxed">
+              En esta primera etapa, el portal funciona como una versión inicial institucional, con contenidos reales, archivo visual, reconocimientos documentados y navegación pública. A futuro, se proyecta como una red cultural federal abierta a nuevas instituciones, municipios, bibliotecas, museos, escuelas, investigadores y espacios comunitarios que deseen aportar materiales, historias y referencias vinculadas a la identidad cultural de cada territorio.
+            </p>
+          </section>
+        </div>
 
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-          <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Eduardo Ceballos
-          </h2>
-          <p className="text-sm text-stone-700 leading-relaxed">
-            Como escritor, periodista y promotor cultural, Eduardo Ceballos ha dedicado su labor al rescate y resguardo de la identidad federal. Su trayectoria y sus valiosas recopilaciones históricas forman parte del núcleo de conocimiento que este portal busca poner al alcance de todos los ciudadanos.
-          </p>
-        </section>
+        {/* Separador de Sección */}
+        <div className="pt-4 pb-2 border-b border-stone-beige/60">
+          <h3 className="text-sm uppercase tracking-[0.2em] font-bold text-stone-500">
+            Pilares e Impulsores
+          </h3>
+        </div>
 
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-          <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Alcance federal
-          </h2>
-          <p className="text-sm text-stone-700 leading-relaxed">
-            Creemos que la historia argentina no se escribe desde un único centro. La Gauchita Federal se ha estructurado para dar voz y visibilidad a cada rincón del territorio nacional, permitiendo a municipios y provincias catalogar sus efemérides, instituciones culturales y reconocimientos locales bajo un mismo espacio integrado.
-          </p>
-        </section>
+        {/* Grid de Impulsores */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
+            <h4 className="font-serif font-bold text-charcoal text-base">
+              Instituto Cultural Andino
+            </h4>
+            <p className="text-xs text-stone-700 leading-relaxed">
+              Pilar fundamental en la investigación y promoción de las tradiciones, el folklore y el patrimonio cultural del norte argentino. Colabora activamente en la difusión de materiales y documentos valiosos para docentes, investigadores y estudiantes.
+            </p>
+          </section>
 
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-          <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Nuestra misión
-          </h2>
-          <p className="text-sm text-stone-700 leading-relaxed">
-            Nuestra misión es consolidar un portal cultural, patrimonial, educativo y comunitario administrable que funcione como un banco de información histórica. Buscamos democratizar el acceso al conocimiento de nuestras tradiciones y asegurar que el legado cultural de cada argentino siga latiendo para las futuras generaciones.
-          </p>
-        </section>
+          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
+            <h4 className="font-serif font-bold text-charcoal text-base">
+              Revista La Gauchita
+            </h4>
+            <p className="text-xs text-stone-700 leading-relaxed">
+              Con una larga trayectoria en la comunicación cultural, ha sido un medio clave para registrar testimonios, crónicas, efemérides y expresiones artísticas. Este portal representa su evolución digital y federal.
+            </p>
+          </section>
+
+          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
+            <h4 className="font-serif font-bold text-charcoal text-base">
+              Eduardo Ceballos
+            </h4>
+            <p className="text-xs text-stone-700 leading-relaxed">
+              Escritor, periodista y promotor cultural, ha dedicado su labor al rescate y resguardo de la identidad federal. Sus valiosas recopilaciones históricas forman parte del núcleo de conocimiento de este portal.
+            </p>
+          </section>
+        </div>
+
       </div>
     </PublicPageShell>
   );
