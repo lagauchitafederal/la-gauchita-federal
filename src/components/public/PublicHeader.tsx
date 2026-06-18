@@ -11,32 +11,37 @@ const publicLinks = [
 
 export default function PublicHeader() {
   return (
-    <header className="w-full bg-white border border-stone-200 rounded-lg shadow-sm py-5 px-4 sm:px-6 md:px-8">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex justify-center lg:justify-start">
-          <Link
-            href="/"
-            className="font-extrabold text-stone-900 tracking-tight text-lg hover:text-stone-700 transition-colors text-center"
-          >
-            La Gauchita Federal
-          </Link>
-        </div>
-
-        <nav className="w-full lg:w-auto">
-          <ul className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-center justify-center gap-2 lg:gap-x-5 text-xs sm:text-sm font-medium text-stone-600">
-            {publicLinks.map((link) => (
-              <li key={link.href} className="min-w-0">
-                <Link
-                  href={link.href}
-                  className="block rounded-md px-3 py-2 text-center hover:bg-stone-100 hover:text-stone-900 transition-colors"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <header className="w-full flex flex-col pt-4 pb-2 border-b border-stone-beige/80">
+      {/* Editorial Header Brand Name */}
+      <div className="text-center py-4 flex flex-col gap-1.5">
+        <Link
+          href="/"
+          className="font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-charcoal hover:text-earth-red transition-colors duration-300 select-none"
+        >
+          LA GAUCHITA FEDERAL
+        </Link>
+        <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-stone-500 font-bold italic">
+          Donde late la historia de cada argentino
+        </p>
       </div>
+
+      {/* Editorial Menu Navigation */}
+      <nav className="w-full py-3 border-t border-stone-beige/60 mt-3">
+        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 text-xs sm:text-sm font-semibold tracking-wide text-charcoal">
+          {publicLinks.map((link) => (
+            <li key={link.href} className="relative group">
+              <Link
+                href={link.href}
+                className="block py-1 hover:text-earth-red transition-colors duration-200"
+              >
+                {link.label}
+              </Link>
+              {/* Subtle line transition under the active/hovered link */}
+              <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-earth-red scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+            </li>
+          ))}
+        </ul>
+      </nav>
     </header>
   );
 }

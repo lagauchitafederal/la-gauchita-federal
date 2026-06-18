@@ -19,39 +19,38 @@ export default async function ReconocimientosPage() {
         description="Premios, menciones y distinciones que fortalecen la trayectoria cultural del proyecto."
       />
 
-        {/* Recognitions List */}
         {recognitions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             {recognitions.map(r => (
-              <div key={r.slug} className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 flex flex-col gap-2 hover:border-stone-300 transition-colors">
+              <div key={r.slug} className="bg-[#fcf8f2] border border-stone-beige rounded-lg p-6 flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
                 <div className="flex justify-between items-start gap-4">
-                  <h2 className="text-lg font-bold text-stone-900 hover:text-stone-700 transition-colors">
+                  <h2 className="text-lg font-serif font-bold text-charcoal hover:text-earth-red transition-colors duration-200">
                     <Link href={`/reconocimientos/${r.slug}`}>
                       {r.title}
                     </Link>
                   </h2>
                   {r.is_featured && (
-                    <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium shrink-0">
+                    <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
                       Destacado
                     </span>
                   )}
                 </div>
 
-                <span className="text-xs text-stone-500 font-semibold tracking-wider uppercase">
+                <span className="text-[10px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 self-start tracking-wider uppercase">
                   {r.recognition_type}
                 </span>
 
                 {r.description && (
-                  <p className="text-sm text-stone-600 line-clamp-3">{r.description}</p>
+                  <p className="text-sm text-stone-700 leading-relaxed line-clamp-3">{r.description}</p>
                 )}
 
-                <div className="mt-auto pt-4 border-t border-stone-100 flex justify-between items-center gap-4">
+                <div className="mt-auto pt-3 border-t border-stone-beige/50 flex justify-between items-center gap-4">
                   {r.recognition_date && (
-                    <span className="text-xs text-stone-400 font-mono">
+                    <span className="text-[11px] text-stone-500 font-mono">
                       Fecha: {new Date(r.recognition_date).toLocaleDateString()}
                     </span>
                   )}
-                  <Link href={`/reconocimientos/${r.slug}`} className="text-xs text-stone-600 hover:text-stone-900 font-bold font-mono">
+                  <Link href={`/reconocimientos/${r.slug}`} className="text-[10px] text-earth-red hover:underline font-bold font-mono uppercase tracking-wider">
                     Ver detalles &rarr;
                   </Link>
                 </div>
@@ -59,7 +58,7 @@ export default async function ReconocimientosPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white border border-stone-200 rounded-lg p-12 text-center">
+          <div className="bg-warm-white border border-stone-beige rounded-lg p-12 text-center">
             <p className="text-stone-500 text-sm italic">
               Aún no hay reconocimientos públicos cargados.
             </p>

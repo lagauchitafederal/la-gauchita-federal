@@ -10,12 +10,12 @@ export default function PublicSectionHeader({
   description
 }: PublicSectionHeaderProps) {
   return (
-    <div className="py-4 border-b border-stone-200">
-      <h1 className="text-3xl font-extrabold tracking-tight text-stone-900">
+    <div className="py-5 border-b border-stone-beige/80 flex flex-col gap-1.5">
+      <h1 className="text-3xl font-serif font-black tracking-tight text-charcoal">
         {title}
       </h1>
       {description && (
-        <p className="text-sm text-stone-500 mt-1 leading-relaxed">
+        <p className="text-sm text-stone-600 leading-relaxed font-medium italic">
           {description}
         </p>
       )}
