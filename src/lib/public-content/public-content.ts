@@ -9,6 +9,8 @@ export interface PublicContent {
   publish_date: string | null;
   is_featured: boolean;
   created_at: string;
+  institutions?: { name: string; slug: string } | null;
+  categories?: { name: string } | null;
 }
 
 export interface PublicContentDetail extends PublicContent {
@@ -23,6 +25,7 @@ export interface PublicInstitution {
   description: string | null;
   is_featured: boolean;
   sort_order: number;
+  address?: string | null;
 }
 
 export interface PublicInstitutionDetail extends PublicInstitution {
@@ -41,6 +44,7 @@ export interface PublicRecognition {
   recognition_date: string | null;
   is_featured: boolean;
   sort_order: number;
+  granting_institution_name?: string | null;
 }
 
 export interface PublicRecognitionDetail extends PublicRecognition {
@@ -79,7 +83,7 @@ export async function getPublishedContents(): Promise<PublicContent[]> {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at')
+      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, institutions(name, slug), categories(name)')
       .order('is_featured', { ascending: false })
       .order('publish_date', { ascending: false })
       .limit(6);
@@ -88,7 +92,19 @@ export async function getPublishedContents(): Promise<PublicContent[]> {
       console.error('Error fetching published contents:', error);
       return [];
     }
-    return (data as PublicContent[]) || [];
+    
+    return (data || []).map((item: any) => ({
+      title: item.title,
+      slug: item.slug,
+      subtitle: item.subtitle,
+      summary: item.summary,
+      event_date: item.event_date,
+      publish_date: item.publish_date,
+      is_featured: item.is_featured,
+      created_at: item.created_at,
+      institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
+      categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null
+    })) as PublicContent[];
   } catch (err) {
     console.error('Unexpected error fetching published contents:', err);
     return [];
@@ -103,7 +119,7 @@ export async function getPublishedContentsList(): Promise<PublicContent[]> {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at')
+      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, institutions(name, slug), categories(name)')
       .order('is_featured', { ascending: false })
       .order('publish_date', { ascending: false })
       .limit(100);
@@ -112,7 +128,19 @@ export async function getPublishedContentsList(): Promise<PublicContent[]> {
       console.error('Error fetching published contents list:', error);
       return [];
     }
-    return (data as PublicContent[]) || [];
+
+    return (data || []).map((item: any) => ({
+      title: item.title,
+      slug: item.slug,
+      subtitle: item.subtitle,
+      summary: item.summary,
+      event_date: item.event_date,
+      publish_date: item.publish_date,
+      is_featured: item.is_featured,
+      created_at: item.created_at,
+      institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
+      categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null
+    })) as PublicContent[];
   } catch (err) {
     console.error('Unexpected error fetching published contents list:', err);
     return [];
@@ -128,7 +156,7 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, body, event_date, publish_date, is_featured, source_reference, created_at')
+      .select('title, slug, subtitle, summary, body, event_date, publish_date, is_featured, source_reference, created_at, institutions(name, slug), categories(name)')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -136,7 +164,23 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
       console.error('Error fetching published content by slug:', error);
       return null;
     }
-    return (data as PublicContentDetail) || null;
+    
+    if (!data) return null;
+    const item = data as any;
+    return {
+      title: item.title,
+      slug: item.slug,
+      subtitle: item.subtitle,
+      summary: item.summary,
+      body: item.body,
+      event_date: item.event_date,
+      publish_date: item.publish_date,
+      is_featured: item.is_featured,
+      source_reference: item.source_reference,
+      created_at: item.created_at,
+      institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
+      categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null
+    } as PublicContentDetail;
   } catch (err) {
     console.error('Unexpected error fetching published content by slug:', err);
     return null;
@@ -151,7 +195,7 @@ export async function getActiveInstitutions(): Promise<PublicInstitution[]> {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('institutions')
-      .select('name, slug, institution_type, description, is_featured, sort_order')
+      .select('name, slug, institution_type, description, is_featured, sort_order, address')
       .order('is_featured', { ascending: false })
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true })
@@ -176,7 +220,7 @@ export async function getActiveInstitutionsList(): Promise<PublicInstitution[]> 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('institutions')
-      .select('name, slug, institution_type, description, is_featured, sort_order')
+      .select('name, slug, institution_type, description, is_featured, sort_order, address')
       .order('is_featured', { ascending: false })
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true })
@@ -225,7 +269,7 @@ export async function getActiveRecognitions(): Promise<PublicRecognition[]> {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('recognitions')
-      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order')
+      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name')
       .order('is_featured', { ascending: false })
       .order('recognition_date', { ascending: false })
       .order('sort_order', { ascending: true })
@@ -250,7 +294,7 @@ export async function getActiveRecognitionsList(): Promise<PublicRecognition[]> 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('recognitions')
-      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order')
+      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name')
       .order('is_featured', { ascending: false })
       .order('recognition_date', { ascending: false })
       .order('sort_order', { ascending: true })

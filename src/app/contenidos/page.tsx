@@ -24,22 +24,34 @@ export default async function ContenidosPage() {
           <div className="flex flex-col gap-4 mt-4">
             {contents.map(c => (
               <article key={c.slug} className="bg-[#fcf8f2] border border-stone-beige rounded-lg p-6 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-                <div className="flex justify-between items-start gap-4">
-                  <h2 className="text-xl font-serif font-bold text-charcoal hover:text-earth-red transition-colors duration-200">
-                    <Link href={`/contenidos/${c.slug}`}>
-                      {c.title}
-                    </Link>
-                  </h2>
+                <div className="flex flex-wrap items-center gap-2">
                   {c.is_featured && (
                     <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
                       Destacado
                     </span>
                   )}
+                  {c.categories?.name && (
+                    <span className="text-[10px] font-bold text-earth-red bg-earth-red/5 px-2.5 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase shrink-0">
+                      {c.categories.name}
+                    </span>
+                  )}
+                  {c.institutions?.name && (
+                    <span className="text-[10px] font-bold text-stone-600 bg-stone-beige/40 px-2.5 py-0.5 rounded border border-stone-beige/60 tracking-wider uppercase shrink-0">
+                      {c.institutions.name}
+                    </span>
+                  )}
                 </div>
 
-                {c.subtitle && (
-                  <p className="text-sm font-semibold text-stone-700 italic">{c.subtitle}</p>
-                )}
+                <div className="flex flex-col gap-1.5">
+                  <h2 className="text-xl font-serif font-bold text-charcoal hover:text-earth-red transition-colors duration-200 leading-snug">
+                    <Link href={`/contenidos/${c.slug}`}>
+                      {c.title}
+                    </Link>
+                  </h2>
+                  {c.subtitle && (
+                    <p className="text-sm font-semibold text-stone-700 italic">{c.subtitle}</p>
+                  )}
+                </div>
 
                 {c.summary && (
                   <p className="text-sm text-stone-700 leading-relaxed">{c.summary}</p>

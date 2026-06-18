@@ -34,7 +34,7 @@ export default async function ContentDetailPage({ params }: PageProps) {
 
   return (
     <PublicPageShell>
-      <article className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col gap-6">
+      <article className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 md:p-12 flex flex-col gap-6 max-w-3xl mx-auto w-full">
           
           {/* Navigation / Header */}
           <div className="flex justify-between items-center pb-4 border-b border-stone-beige/60">
@@ -45,17 +45,30 @@ export default async function ContentDetailPage({ params }: PageProps) {
           </div>
 
           {/* Title and Metadata */}
-          <div className="flex flex-col gap-2">
-            {content.is_featured && (
-              <span className="self-start text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2.5 py-0.5 rounded font-bold uppercase tracking-wider mb-2">
-                Destacado
-              </span>
-            )}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {content.is_featured && (
+                <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                  Destacado
+                </span>
+              )}
+              {content.categories?.name && (
+                <span className="text-[10px] font-bold text-earth-red bg-earth-red/5 px-2.5 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase">
+                  {content.categories.name}
+                </span>
+              )}
+              {content.institutions?.name && (
+                <span className="text-[10px] font-bold text-stone-600 bg-stone-beige/40 px-2.5 py-0.5 rounded border border-stone-beige/60 tracking-wider uppercase">
+                  {content.institutions.name}
+                </span>
+              )}
+            </div>
+            
             <h1 className="text-3xl md:text-4xl font-serif font-black tracking-tight text-charcoal leading-tight">
               {content.title}
             </h1>
             {content.subtitle && (
-              <p className="text-lg text-stone-700 font-medium italic mt-1 leading-relaxed">
+              <p className="text-lg text-stone-700 font-medium italic leading-relaxed">
                 {content.subtitle}
               </p>
             )}
@@ -73,8 +86,8 @@ export default async function ContentDetailPage({ params }: PageProps) {
 
           {/* Summary (if exists, styled as callout/lead paragraph) */}
           {content.summary && (
-            <div className="bg-[#fcf8f2] border-l-4 border-earth-red p-4 rounded-r-md">
-              <p className="text-stone-800 text-base leading-relaxed font-medium">
+            <div className="bg-[#fcf8f2] border-l-4 border-earth-red p-5 rounded-r-md">
+              <p className="text-stone-850 text-base leading-relaxed font-semibold">
                 {content.summary}
               </p>
             </div>
@@ -82,7 +95,7 @@ export default async function ContentDetailPage({ params }: PageProps) {
 
           {/* Body Content */}
           {content.body ? (
-            <div className="text-stone-850 text-base leading-relaxed whitespace-pre-wrap font-serif flex flex-col gap-4">
+            <div className="text-stone-850 text-base md:text-lg leading-relaxed whitespace-pre-wrap font-serif flex flex-col gap-6 pt-2">
               {content.body}
             </div>
           ) : (
@@ -94,7 +107,7 @@ export default async function ContentDetailPage({ params }: PageProps) {
           {/* Source Reference */}
           {content.source_reference && (
             <div className="mt-8 pt-4 border-t border-stone-beige/50 text-[11px] text-stone-500 font-mono">
-              <span className="font-bold">Referencia:</span> {content.source_reference}
+              <span className="font-bold">Referencia / Fuente:</span> {content.source_reference}
             </div>
           )}
 

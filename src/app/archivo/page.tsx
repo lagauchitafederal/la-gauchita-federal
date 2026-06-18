@@ -33,7 +33,16 @@ export default async function ArchivoPage() {
                 'historical_photo'
               ].includes(asset.asset_type);
 
-            const useContain = ['recognition_document', 'cover_image'].includes(asset.asset_type);
+            const useContain = [
+              'recognition_document',
+              'cover_image',
+              'archive_material',
+              'pdf_document',
+              'magazine_pdf',
+              'book_pdf',
+              'teacher_resource',
+              'institutional_document'
+            ].includes(asset.asset_type);
 
             return (
               <div
