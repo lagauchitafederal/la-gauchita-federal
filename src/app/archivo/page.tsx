@@ -21,7 +21,7 @@ export default async function ArchivoPage() {
       />
 
       {mediaAssets.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mediaAssets.map((asset) => {
             const imageUrl = getPublicMediaUrl(asset.bucket_name, asset.storage_path);
             const isImage = 
@@ -33,57 +33,67 @@ export default async function ArchivoPage() {
                 'historical_photo'
               ].includes(asset.asset_type);
 
+            const useContain = ['recognition_document', 'cover_image'].includes(asset.asset_type);
+
             return (
               <div
                 key={`${asset.bucket_name}/${asset.storage_path}`}
-                className="bg-white border border-stone-200 rounded-lg shadow-sm p-6 flex flex-col gap-3 hover:border-stone-300 transition-colors"
+                className="bg-white border border-stone-200/80 rounded-lg shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow"
               >
-                {isImage && imageUrl && (
-                  <div className="relative w-full h-48 mb-2 overflow-hidden rounded bg-stone-200 flex items-center justify-center">
-                    <img
-                      src={imageUrl}
-                      alt={asset.alt_text || asset.title}
-                      className="object-cover w-full h-full"
-                    />
+                {isImage && imageUrl ? (
+                  useContain ? (
+                    <div className="relative w-full h-64 bg-stone-50 flex items-center justify-center p-4 border-b border-stone-100">
+                      <img
+                        src={imageUrl}
+                        alt={asset.alt_text || asset.title}
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-64 bg-stone-50 overflow-hidden border-b border-stone-100">
+                      <img
+                        src={imageUrl}
+                        alt={asset.alt_text || asset.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )
+                ) : (
+                  <div className="relative w-full h-64 bg-stone-100 flex flex-col items-center justify-center p-6 border-b border-stone-100 text-stone-400 gap-3">
+                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+                      {formatAssetType(asset.asset_type)}
+                    </span>
                   </div>
                 )}
-                <div className="flex justify-between items-start gap-4">
-                  <h2 className="text-lg font-bold text-stone-900">
+                <div className="p-6 flex flex-col flex-grow gap-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
+                      {formatAssetType(asset.asset_type)}
+                    </span>
+                    {asset.rights_status && (
+                      <span className="bg-stone-100 text-stone-600 px-2 py-0.5 rounded text-[10px] font-mono">
+                        Derechos: {asset.rights_status}
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-xl font-serif font-bold text-stone-900 leading-snug">
                     {asset.title}
                   </h2>
-                  <span className="text-xs bg-stone-100 text-stone-700 px-2 py-0.5 rounded font-medium shrink-0">
-                    Archivo público
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap gap-2 text-xs text-stone-500">
-                  <span className="font-semibold uppercase tracking-wider">
-                    Tipo: {formatAssetType(asset.asset_type)}
-                  </span>
-                  {asset.rights_status && (
-                    <span className="bg-stone-100 px-2 py-0.5 rounded text-stone-600 font-mono">
-                      Derechos: {asset.rights_status}
-                    </span>
+                  {asset.description && (
+                    <p className="text-sm text-stone-600 leading-relaxed line-clamp-3">
+                      {asset.description}
+                    </p>
+                  )}
+                  {(asset.credit || asset.source_reference) && (
+                    <div className="mt-auto pt-3 border-t border-stone-100 flex flex-col gap-1 text-xs text-stone-500 italic">
+                      {asset.credit && <span>Crédito: {asset.credit}</span>}
+                      {asset.source_reference && <span>Fuente: {asset.source_reference}</span>}
+                    </div>
                   )}
                 </div>
-
-                {asset.description && (
-                  <p className="text-sm text-stone-600 leading-relaxed">
-                    {asset.description}
-                  </p>
-                )}
-
-                {asset.alt_text && (
-                  <p className="text-xs text-stone-500 italic">
-                    Alt: {asset.alt_text}
-                  </p>
-                )}
-
-                {asset.credit && (
-                  <div className="mt-auto pt-3 border-t border-stone-100 text-xs text-stone-400 font-mono">
-                    Crédito: {asset.credit}
-                  </div>
-                )}
               </div>
             );
           })}

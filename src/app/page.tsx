@@ -242,48 +242,75 @@ export default async function Home() {
       </section>
 
       <section className="bg-white border border-stone-200 rounded-lg shadow-sm p-8">
-        <h2 className="text-2xl font-bold text-stone-900 mb-4 pb-2 border-b border-stone-100">
+        <h2 className="text-2xl font-serif font-bold text-stone-900 mb-6 pb-2 border-b border-stone-100">
           Archivo y Medios
         </h2>
         {mediaAssets.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mediaAssets.map((ma) => {
-              const imageUrl = getPublicMediaUrl(ma.bucket_name, ma.storage_path);
-              const isImage = 
-                (ma.mime_type && ma.mime_type.startsWith('image/')) ||
-                [
-                  'cover_image',
-                  'content_image',
-                  'gallery_image',
-                  'historical_photo'
-                ].includes(ma.asset_type);
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {mediaAssets.slice(0, 3).map((ma) => {
+                const imageUrl = getPublicMediaUrl(ma.bucket_name, ma.storage_path);
+                const isImage = 
+                  (ma.mime_type && ma.mime_type.startsWith('image/')) ||
+                  [
+                    'cover_image',
+                    'content_image',
+                    'gallery_image',
+                    'historical_photo'
+                  ].includes(ma.asset_type);
 
-              return (
-                <div key={ma.storage_path} className="p-4 bg-stone-50 border border-stone-200 rounded-md flex flex-col gap-2">
-                  {isImage && imageUrl && (
-                    <div className="relative w-full h-48 mb-2 overflow-hidden rounded bg-stone-200 flex items-center justify-center">
-                      <img
-                        src={imageUrl}
-                        alt={ma.alt_text || ma.title}
-                        className="object-cover w-full h-full"
-                      />
+                const useContain = ['recognition_document', 'cover_image'].includes(ma.asset_type);
+
+                return (
+                  <div key={ma.storage_path} className="bg-white border border-stone-200/80 rounded-lg overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                    {isImage && imageUrl ? (
+                      useContain ? (
+                        <div className="relative w-full h-48 bg-stone-100 flex items-center justify-center p-4 border-b border-stone-100">
+                          <img
+                            src={imageUrl}
+                            alt={ma.alt_text || ma.title}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="relative w-full h-48 bg-stone-100 overflow-hidden border-b border-stone-100">
+                          <img
+                            src={imageUrl}
+                            alt={ma.alt_text || ma.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )
+                    ) : (
+                      <div className="relative w-full h-48 bg-stone-100 flex flex-col items-center justify-center p-6 border-b border-stone-100 text-stone-400 gap-2">
+                        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+                          {formatAssetType(ma.asset_type)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="p-4 flex flex-col flex-grow gap-2">
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded self-start">
+                        {formatAssetType(ma.asset_type)}
+                      </span>
+                      <h3 className="font-serif font-bold text-stone-900 text-base line-clamp-2">{ma.title}</h3>
+                      {ma.credit && (
+                        <span className="text-xs text-stone-500 mt-auto pt-2 border-t border-stone-50 italic">
+                          Crédito: {ma.credit}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <h3 className="font-bold text-stone-800">{ma.title}</h3>
-                  <div className="flex flex-wrap gap-2 text-xs text-stone-500">
-                    <span className="bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
-                      {formatAssetType(ma.asset_type)}
-                    </span>
                   </div>
-                  {ma.alt_text && (
-                    <p className="text-xs text-stone-500">Alt: {ma.alt_text}</p>
-                  )}
-                  {ma.credit && (
-                    <p className="text-xs text-stone-400">Crédito: {ma.credit}</p>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            <div className="mt-8 text-center">
+              <Link href="/archivo" className="inline-flex items-center justify-center px-5 py-2.5 border border-stone-300 text-sm font-medium rounded-md text-stone-700 bg-white hover:bg-stone-50 transition-colors shadow-sm gap-2">
+                Ver archivo completo &rarr;
+              </Link>
+            </div>
           </div>
         ) : (
           <p className="text-stone-500 text-sm italic py-4">
