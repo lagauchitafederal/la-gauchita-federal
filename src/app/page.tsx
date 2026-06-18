@@ -249,12 +249,14 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {mediaAssets.map((ma) => {
               const imageUrl = getPublicMediaUrl(ma.bucket_name, ma.storage_path);
-              const isImage = [
-                'cover_image',
-                'content_image',
-                'gallery_image',
-                'historical_photo'
-              ].includes(ma.asset_type);
+              const isImage = 
+                (ma.mime_type && ma.mime_type.startsWith('image/')) ||
+                [
+                  'cover_image',
+                  'content_image',
+                  'gallery_image',
+                  'historical_photo'
+                ].includes(ma.asset_type);
 
               return (
                 <div key={ma.storage_path} className="p-4 bg-stone-50 border border-stone-200 rounded-md flex flex-col gap-2">

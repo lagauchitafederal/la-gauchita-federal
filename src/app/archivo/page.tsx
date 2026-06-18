@@ -24,12 +24,14 @@ export default async function ArchivoPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {mediaAssets.map((asset) => {
             const imageUrl = getPublicMediaUrl(asset.bucket_name, asset.storage_path);
-            const isImage = [
-              'cover_image',
-              'content_image',
-              'gallery_image',
-              'historical_photo'
-            ].includes(asset.asset_type);
+            const isImage = 
+              (asset.mime_type && asset.mime_type.startsWith('image/')) ||
+              [
+                'cover_image',
+                'content_image',
+                'gallery_image',
+                'historical_photo'
+              ].includes(asset.asset_type);
 
             return (
               <div

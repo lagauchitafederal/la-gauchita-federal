@@ -58,6 +58,7 @@ export interface PublicMediaAsset {
   alt_text: string | null;
   credit: string | null;
   sort_order: number;
+  mime_type: string | null;
 }
 
 export interface PublicMediaAssetDetail extends PublicMediaAsset {
@@ -298,7 +299,7 @@ export async function getPublicMediaAssets(): Promise<PublicMediaAsset[]> {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('media_assets')
-      .select('title, asset_type, bucket_name, storage_path, alt_text, credit, sort_order')
+      .select('title, asset_type, bucket_name, storage_path, alt_text, credit, sort_order, mime_type')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(6);
@@ -322,7 +323,7 @@ export async function getPublicMediaAssetsList(): Promise<PublicMediaAssetDetail
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('media_assets')
-      .select('title, description, asset_type, bucket_name, storage_path, alt_text, credit, source_reference, rights_status, visibility, status, sort_order, created_at')
+      .select('title, description, asset_type, bucket_name, storage_path, alt_text, credit, source_reference, rights_status, visibility, status, sort_order, created_at, mime_type')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(100);
