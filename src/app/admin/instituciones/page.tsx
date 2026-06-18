@@ -1,14 +1,50 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import AdminShell from '../../../components/admin/AdminShell';
 import AdminSectionHeader from '../../../components/admin/AdminSectionHeader';
+import { getAdminInstitutionsList, AdminInstitution } from '../../../lib/admin/admin-institutions';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Administración de Instituciones',
   description: 'Gestión de la red cultural e institucional de La Gauchita Federal',
 };
 
-export default function AdminInstitucionesPage() {
+const TYPE_LABELS: Record<string, string> = {
+  cultural_institute: 'Instituto Cultural',
+  municipality: 'Municipio',
+  province: 'Provincia',
+  government_agency: 'Org. Gubernamental',
+  school: 'Escuela',
+  library: 'Biblioteca',
+  museum: 'Museo',
+  association: 'Asociación',
+  pena: 'Peña',
+  gastronomic_place: 'Lugar Gastronómico',
+  cultural_center: 'Centro Cultural',
+  media: 'Medio',
+  other: 'Otro',
+};
+
+const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
+  active: { text: 'Activo', classes: 'bg-emerald-50 text-emerald-700 border-emerald-200/60' },
+  draft: { text: 'Borrador', classes: 'bg-stone-100 text-stone-600 border-stone-200/60' },
+  inactive: { text: 'Inactivo', classes: 'bg-amber-50 text-amber-700 border-amber-200/60' },
+  archived: { text: 'Archivado', classes: 'bg-slate-100 text-slate-600 border-slate-200/60' },
+};
+
+export default async function AdminInstitucionesPage() {
+  let institutions: AdminInstitution[] = [];
+  let isError = false;
+
+  try {
+    institutions = await getAdminInstitutionsList();
+  } catch (error) {
+    isError = true;
+  }
+
   return (
     <AdminShell>
       
@@ -16,68 +52,132 @@ export default function AdminInstitucionesPage() {
       <AdminSectionHeader
         title="Instituciones"
         description="Administración de instituciones participantes o vinculadas al archivo documental."
-        inPreparation={true}
+        inPreparation={false}
       />
 
-      {/* Placeholder content and disabled actions */}
-      <div className="bg-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
-        
-        <div className="flex flex-col gap-2">
-          <h2 className="text-base font-serif font-bold text-charcoal">
-            Acciones de Gestión
-          </h2>
-          <p className="text-xs text-stone-500 leading-relaxed">
-            Las funciones de alta y edición de instituciones participantes y vinculadas se activarán en la siguiente etapa del desarrollo.
+      {/* Aviso prudente solo lectura */}
+      <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+        <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
+          Modo solo lectura. La creación y edición de instituciones será incorporada en una próxima etapa.
+        </p>
+      </div>
+
+      {isError ? (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-700 text-sm font-bold font-mono">
+            No se pudieron cargar las instituciones.
           </p>
         </div>
-
-        {/* Action buttons (Disabled) */}
-        <div className="flex flex-wrap gap-4 pt-2">
-          <button
-            disabled
-            className="px-4 py-2.5 bg-stone-300 text-stone-500 text-xs font-bold uppercase tracking-wider rounded-md cursor-not-allowed border border-stone-400/50"
-          >
-            Crear institución
-          </button>
-          
-          <button
-            disabled
-            className="px-4 py-2.5 bg-stone-200 text-stone-500 text-xs font-bold uppercase tracking-wider rounded-md cursor-not-allowed border border-stone-300"
-          >
-            Ver instituciones activas
-          </button>
-
-          <button
-            disabled
-            className="px-4 py-2.5 bg-stone-200 text-stone-500 text-xs font-bold uppercase tracking-wider rounded-md cursor-not-allowed border border-stone-300"
-          >
-            Revisar instituciones archivadas
-          </button>
+      ) : institutions.length === 0 ? (
+        <div className="bg-white border border-stone-beige rounded-lg p-12 text-center">
+          <p className="text-stone-500 text-sm italic font-mono">
+            No hay instituciones cargadas.
+          </p>
         </div>
+      ) : (
+        <div className="bg-white border border-stone-beige rounded-lg overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-stone-50 text-stone-500 font-mono border-b border-stone-200 font-bold uppercase tracking-wider">
+                <tr>
+                  <th className="p-4 min-w-[200px]">Nombre</th>
+                  <th className="p-4 hidden md:table-cell">Slug</th>
+                  <th className="p-4">Tipo</th>
+                  <th className="p-4 hidden sm:table-cell">Ubicación</th>
+                  <th className="p-4">Estado</th>
+                  <th className="p-4 hidden sm:table-cell">Destacada</th>
+                  <th className="p-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100 text-stone-700">
+                {institutions.map((inst) => {
+                  const statusInfo = STATUS_LABELS[inst.status] || {
+                    text: inst.status,
+                    classes: 'bg-stone-100 text-stone-600 border-stone-200/60',
+                  };
+                  const typeLabel = TYPE_LABELS[inst.institution_type] || inst.institution_type;
 
-        {/* Informative Table mockup (Disabled) */}
-        <div className="border border-stone-200 rounded-lg overflow-hidden mt-4 opacity-60">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-stone-50 text-stone-500 font-mono border-b border-stone-200 font-bold uppercase tracking-wider">
-              <tr>
-                <th className="p-4">Nombre</th>
-                <th className="p-4">Tipo</th>
-                <th className="p-4">Estado</th>
-                <th className="p-4">Región</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100 text-stone-700">
-              <tr>
-                <td className="p-4 font-serif font-bold text-stone-500 italic">Ejemplo de institución bloqueada...</td>
-                <td className="p-4">Museo</td>
-                <td className="p-4"><span className="px-2 py-0.5 bg-stone-100 border rounded text-[10px]">Bloqueado</span></td>
-                <td className="p-4 font-mono">--</td>
-              </tr>
-            </tbody>
-          </table>
+                  return (
+                    <tr key={inst.id} className="hover:bg-stone-50/50 transition-colors duration-150">
+                      
+                      {/* Nombre */}
+                      <td className="p-4">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-serif font-bold text-charcoal text-sm leading-snug">
+                            {inst.name}
+                          </span>
+                          <span className="text-[10px] text-stone-400 font-mono md:hidden mt-0.5">
+                            Slug: {inst.slug}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Slug (Desktop only) */}
+                      <td className="p-4 hidden md:table-cell font-mono text-stone-500 max-w-[150px] truncate">
+                        {inst.slug}
+                      </td>
+
+                      {/* Tipo */}
+                      <td className="p-4 font-medium">
+                        <span className="bg-stone-100 border border-stone-200/60 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide font-mono text-stone-600">
+                          {typeLabel}
+                        </span>
+                      </td>
+
+                      {/* Ubicación */}
+                      <td className="p-4 hidden sm:table-cell font-mono text-stone-500">
+                        {inst.municipality?.name || inst.province?.name ? (
+                          <div className="flex flex-col gap-0.5">
+                            {inst.municipality?.name && (
+                              <span className="font-medium text-stone-700">{inst.municipality.name}</span>
+                            )}
+                            {inst.province?.name && (
+                              <span className="text-[10px] font-bold text-earth-red uppercase tracking-wider">{inst.province.name}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-stone-400 italic">No especificada</span>
+                        )}
+                      </td>
+
+                      {/* Estado */}
+                      <td className="p-4">
+                        <span className={`inline-block px-2.5 py-0.5 border rounded text-[10px] uppercase font-bold tracking-wider font-mono ${statusInfo.classes}`}>
+                          {statusInfo.text}
+                        </span>
+                      </td>
+
+                      {/* Destacada */}
+                      <td className="p-4 hidden sm:table-cell font-mono">
+                        {inst.is_featured ? (
+                          <span className="text-[10px] bg-amber-50 text-amber-900 border border-amber-250 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                            Sí
+                          </span>
+                        ) : (
+                          <span className="text-stone-400 italic">No</span>
+                        )}
+                      </td>
+
+                      {/* Acciones */}
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end items-center gap-3">
+                          <Link
+                            href={`/instituciones/${inst.slug}`}
+                            className="inline-flex items-center justify-center px-3 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150"
+                          >
+                            Ver público
+                          </Link>
+                        </div>
+                      </td>
+
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-      </div>
+      )}
 
     </AdminShell>
   );
