@@ -40,10 +40,10 @@ export default async function AdminContenidosPage() {
         inPreparation={false}
       />
 
-      {/* Aviso prudente solo lectura */}
+      {/* Aviso de edición habilitada */}
       <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
         <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
-          Modo solo lectura. La creación y edición de contenidos será incorporada en una próxima etapa.
+          Edición inicial habilitada. El slug, las relaciones y los archivos asociados se administrarán en una etapa posterior.
         </p>
       </div>
 
@@ -151,6 +151,12 @@ export default async function AdminContenidosPage() {
                             className="inline-flex items-center justify-center px-3 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150"
                           >
                             Ver público
+                          </Link>
+                          <Link
+                            href={`/admin/contenidos/${c.id}/editar`}
+                            className="inline-flex items-center justify-center px-3 py-1.5 bg-earth-red text-white rounded-md text-[10px] uppercase tracking-wider font-bold hover:bg-earth-red/90 transition-colors duration-150"
+                          >
+                            Editar
                           </Link>
                         </div>
                       </td>

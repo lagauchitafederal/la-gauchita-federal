@@ -68,3 +68,95 @@ export async function getAdminContentsList(): Promise<AdminContent[]> {
     throw err;
   }
 }
+
+export interface AdminContentDetail {
+  id: string;
+  title: string;
+  slug: string;
+  subtitle: string | null;
+  summary: string | null;
+  body: string | null;
+  event_date: string | null;
+  source_reference: string | null;
+  status: string;
+  visibility: string;
+}
+
+/**
+ * Fetches a single content record by id from public.contents.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function getAdminContentById(id: string): Promise<AdminContentDetail | null> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { data, error } = await supabase
+      .from('contents')
+      .select('id, title, slug, subtitle, summary, body, event_date, source_reference, status, visibility')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching admin content by id:', error);
+      throw error;
+    }
+
+    return data as AdminContentDetail | null;
+  } catch (err) {
+    console.error('Unexpected error in getAdminContentById:', err);
+    throw err;
+  }
+}
+
+/**
+ * Updates a single content record by id in public.contents.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function updateAdminContent(
+  id: string,
+  updatedData: Partial<Omit<AdminContentDetail, 'id' | 'slug'>>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { error } = await supabase
+      .from('contents')
+      .update(updatedData)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating admin content:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('Unexpected error in updateAdminContent:', err);
+    return { success: false, error: err.message || 'Ocurrió un error inesperado.' };
+  }
+}
+
