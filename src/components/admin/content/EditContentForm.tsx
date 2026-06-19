@@ -61,16 +61,14 @@ export default function EditContentForm({ content }: EditContentFormProps) {
     try {
       const res = await updateContentAction(content.id, updatedData);
       if (res.success) {
-        setSuccessMsg('Los cambios fueron guardados correctamente.');
-        router.refresh();
-        // Scroll to top to see confirmation message
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Redirigir al listado con el parámetro de éxito
+        window.location.assign('/admin/contenidos?guardado=1');
       } else {
         setErrorMsg(res.error || 'Ocurrió un error al intentar guardar los cambios.');
+        setLoading(false);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Ocurrió un error inesperado.');
-    } finally {
       setLoading(false);
     }
   };

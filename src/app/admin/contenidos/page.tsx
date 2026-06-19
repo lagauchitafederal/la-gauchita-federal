@@ -20,7 +20,14 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
   rejected: { text: 'Rechazado', classes: 'bg-red-50 text-red-700 border-red-200/60' },
 };
 
-export default async function AdminContenidosPage() {
+interface AdminContenidosPageProps {
+  searchParams: Promise<{ guardado?: string }>;
+}
+
+export default async function AdminContenidosPage({ searchParams }: AdminContenidosPageProps) {
+  const params = await searchParams;
+  const isSaved = params.guardado === '1';
+
   let contents: AdminContent[] = [];
   let isError = false;
 
@@ -39,6 +46,15 @@ export default async function AdminContenidosPage() {
         description="Administración de artículos, efemérides, notas culturales y materiales editoriales."
         inPreparation={false}
       />
+
+      {/* Aviso de éxito tras guardar */}
+      {isSaved && (
+        <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+          <p className="text-xs text-emerald-800 font-bold font-mono">
+            Los cambios fueron guardados correctamente.
+          </p>
+        </div>
+      )}
 
       {/* Aviso de edición habilitada */}
       <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
