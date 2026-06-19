@@ -145,18 +145,18 @@ export default async function AdminContenidosPage() {
 
                       {/* Acciones */}
                       <td className="p-4 text-right">
-                        <div className="flex justify-end items-center gap-3">
+                        <div className="flex flex-col gap-2 justify-center items-end">
                           <Link
                             href={`/contenidos/${c.slug}`}
-                            className="inline-flex items-center justify-center px-3 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150"
+                            className="inline-flex items-center justify-center w-28 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150 text-center"
                           >
-                            Ver público
+                            VER PÚBLICO
                           </Link>
                           <Link
                             href={`/admin/contenidos/${c.id}/editar`}
-                            className="inline-flex items-center justify-center px-3 py-1.5 bg-earth-red text-white rounded-md text-[10px] uppercase tracking-wider font-bold hover:bg-earth-red/90 transition-colors duration-150"
+                            className="inline-flex items-center justify-center w-28 py-1.5 bg-earth-red text-white rounded-md text-[10px] uppercase tracking-wider font-bold hover:bg-earth-red/90 transition-colors duration-150 text-center"
                           >
-                            Editar
+                            EDITAR
                           </Link>
                         </div>
                       </td>
