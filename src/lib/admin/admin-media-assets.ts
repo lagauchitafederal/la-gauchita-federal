@@ -1,0 +1,60 @@
+import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
+import { getEnv } from '../supabase/env';
+
+export interface AdminMediaAsset {
+  id: string;
+  title: string;
+  description: string | null;
+  asset_type: string;
+  bucket_name: string;
+  storage_path: string;
+  mime_type: string | null;
+  file_size_bytes: number | null;
+  original_filename: string | null;
+  alt_text: string | null;
+  credit: string | null;
+  source_reference: string | null;
+  rights_status: string;
+  visibility: string;
+  status: string;
+  created_at: string;
+}
+
+/**
+ * Fetches all media assets from public.media_assets for administrative list display.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function getAdminMediaAssetsList(): Promise<AdminMediaAsset[]> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    // Initialize client with authorization token to respect RLS
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { data, error } = await supabase
+      .from('media_assets')
+      .select('id, title, description, asset_type, bucket_name, storage_path, mime_type, file_size_bytes, original_filename, alt_text, credit, source_reference, rights_status, visibility, status, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching admin media assets list:', error);
+      throw error;
+    }
+
+    return (data || []) as AdminMediaAsset[];
+  } catch (err) {
+    console.error('Unexpected error in getAdminMediaAssetsList:', err);
+    throw err;
+  }
+}
