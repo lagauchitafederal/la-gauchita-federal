@@ -68,3 +68,94 @@ export async function getAdminInstitutionsList(): Promise<AdminInstitution[]> {
     throw err;
   }
 }
+
+export interface AdminInstitutionDetail {
+  id: string;
+  name: string;
+  slug: string;
+  institution_type: string;
+  description: string | null;
+  website_url: string | null;
+  is_featured: boolean;
+  sort_order: number;
+  status: string;
+}
+
+/**
+ * Fetches a single institution record by id from public.institutions.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function getAdminInstitutionById(id: string): Promise<AdminInstitutionDetail | null> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { data, error } = await supabase
+      .from('institutions')
+      .select('id, name, slug, institution_type, description, website_url, is_featured, sort_order, status')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching admin institution by id:', error);
+      throw error;
+    }
+
+    return data as AdminInstitutionDetail | null;
+  } catch (err) {
+    console.error('Unexpected error in getAdminInstitutionById:', err);
+    throw err;
+  }
+}
+
+/**
+ * Updates a single institution record by id in public.institutions.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function updateAdminInstitution(
+  id: string,
+  updatedData: Partial<Omit<AdminInstitutionDetail, 'id' | 'slug'>>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { error } = await supabase
+      .from('institutions')
+      .update(updatedData)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating admin institution:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('Unexpected error in updateAdminInstitution:', err);
+    return { success: false, error: err.message || 'Ocurrió un error inesperado.' };
+  }
+}
+

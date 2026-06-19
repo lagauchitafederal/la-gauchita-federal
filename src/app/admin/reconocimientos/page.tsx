@@ -46,7 +46,14 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
   rejected: { text: 'Rechazado', classes: 'bg-red-50 text-red-700 border-red-200/60' },
 };
 
-export default async function AdminReconocimientosPage() {
+interface AdminReconocimientosPageProps {
+  searchParams: Promise<{ guardado?: string }>;
+}
+
+export default async function AdminReconocimientosPage({ searchParams }: AdminReconocimientosPageProps) {
+  const params = await searchParams;
+  const isSaved = params.guardado === '1';
+
   let recognitions: AdminRecognition[] = [];
   let isError = false;
 
@@ -66,10 +73,19 @@ export default async function AdminReconocimientosPage() {
         inPreparation={false}
       />
 
-      {/* Aviso prudente solo lectura */}
+      {/* Aviso de éxito tras guardar */}
+      {isSaved && (
+        <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+          <p className="text-xs text-emerald-800 font-bold font-mono">
+            Los cambios fueron guardados correctamente.
+          </p>
+        </div>
+      )}
+
+      {/* Aviso de edición habilitada */}
       <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
         <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
-          Modo solo lectura. La creación y edición de reconocimientos será incorporada en una próxima etapa.
+          Edición inicial habilitada. El slug, las relaciones y los archivos asociados se administrarán en una etapa posterior.
         </p>
       </div>
 
@@ -172,12 +188,18 @@ export default async function AdminReconocimientosPage() {
 
                       {/* Acciones */}
                       <td className="p-4 text-right">
-                        <div className="flex justify-end items-center gap-3">
+                        <div className="flex flex-col gap-2 justify-center items-end">
                           <Link
                             href={`/reconocimientos/${rec.slug}`}
-                            className="inline-flex items-center justify-center px-3 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150"
+                            className="inline-flex items-center justify-center w-28 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150 text-center"
                           >
-                            Ver público
+                            VER PÚBLICO
+                          </Link>
+                          <Link
+                            href={`/admin/reconocimientos/${rec.id}/editar`}
+                            className="inline-flex items-center justify-center w-28 py-1.5 bg-earth-red text-white rounded-md text-[10px] uppercase tracking-wider font-bold hover:bg-earth-red/90 transition-colors duration-150 text-center"
+                          >
+                            EDITAR
                           </Link>
                         </div>
                       </td>
