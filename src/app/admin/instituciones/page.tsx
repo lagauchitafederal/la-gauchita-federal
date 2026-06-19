@@ -36,12 +36,13 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminInstitucionesPageProps {
-  searchParams: Promise<{ guardado?: string }>;
+  searchParams: Promise<{ guardado?: string; creado?: string }>;
 }
 
 export default async function AdminInstitucionesPage({ searchParams }: AdminInstitucionesPageProps) {
   const params = await searchParams;
   const isSaved = params.guardado === '1';
+  const isCreated = params.creado === '1';
 
   let institutions: AdminInstitution[] = [];
   let isError = false;
@@ -55,28 +56,50 @@ export default async function AdminInstitucionesPage({ searchParams }: AdminInst
   return (
     <AdminShell>
       
-      {/* Module Header */}
-      <AdminSectionHeader
-        title="Instituciones"
-        description="Administración de instituciones participantes o vinculadas al archivo documental."
-        inPreparation={false}
-      />
+      {/* Module Header and Create Button */}
+      <div className="flex flex-col gap-4">
+        <AdminSectionHeader
+          title="Instituciones"
+          description="Administración de instituciones participantes o vinculadas al archivo documental."
+          inPreparation={false}
+        />
+        <div className="flex justify-start">
+          <Link
+            href="/admin/instituciones/nuevo"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-earth-red text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-earth-red/90 transition-colors duration-200 font-mono shadow-sm"
+          >
+            NUEVA INSTITUCIÓN
+          </Link>
+        </div>
+      </div>
 
-      {/* Aviso de éxito tras guardar */}
-      {isSaved && (
-        <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
-          <p className="text-xs text-emerald-800 font-bold font-mono">
-            Los cambios fueron guardados correctamente.
+      <div className="flex flex-col gap-4">
+        {/* Aviso de éxito tras guardar */}
+        {isSaved && (
+          <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+            <p className="text-xs text-emerald-800 font-bold font-mono">
+              Los cambios fueron guardados correctamente.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso de éxito tras crear */}
+        {isCreated && (
+          <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+            <p className="text-xs text-emerald-800 font-bold font-mono">
+              La institución fue creada correctamente.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso de edición habilitada */}
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+          <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
+            Edición inicial habilitada. El slug, la ubicación territorial y las relaciones se administrarán en una etapa posterior.
           </p>
         </div>
-      )}
-
-      {/* Aviso de edición habilitada */}
-      <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
-        <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
-          Edición inicial habilitada. El slug, la ubicación territorial y las relaciones se administrarán en una etapa posterior.
-        </p>
       </div>
+
 
       {isError ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">

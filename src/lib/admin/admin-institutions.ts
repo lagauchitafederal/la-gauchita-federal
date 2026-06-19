@@ -159,3 +159,52 @@ export async function updateAdminInstitution(
   }
 }
 
+export interface NewAdminInstitution {
+  name: string;
+  slug: string;
+  institution_type: string;
+  description: string | null;
+  website_url: string | null;
+  is_featured: boolean;
+  sort_order: number;
+}
+
+/**
+ * Creates a new institution record in public.institutions.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function createAdminInstitution(
+  institutionData: NewAdminInstitution
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { error } = await supabase
+      .from('institutions')
+      .insert([institutionData]);
+
+    if (error) {
+      console.error('Error inserting admin institution:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('Unexpected error in createAdminInstitution:', err);
+    return { success: false, error: err.message || 'Ocurrió un error inesperado.' };
+  }
+}
+
+

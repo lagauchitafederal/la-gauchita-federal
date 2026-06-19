@@ -160,3 +160,53 @@ export async function updateAdminContent(
   }
 }
 
+export interface NewAdminContent {
+  title: string;
+  slug: string;
+  subtitle: string | null;
+  summary: string | null;
+  body: string | null;
+  content_type_id: string;
+  category_id: string | null;
+  is_featured: boolean;
+}
+
+/**
+ * Creates a new content record in public.contents.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function createAdminContent(
+  contentData: NewAdminContent
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { error } = await supabase
+      .from('contents')
+      .insert([contentData]);
+
+    if (error) {
+      console.error('Error inserting admin content:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('Unexpected error in createAdminContent:', err);
+    return { success: false, error: err.message || 'Ocurrió un error inesperado.' };
+  }
+}
+
+

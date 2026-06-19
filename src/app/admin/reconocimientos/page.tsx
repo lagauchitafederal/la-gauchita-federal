@@ -47,12 +47,13 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminReconocimientosPageProps {
-  searchParams: Promise<{ guardado?: string }>;
+  searchParams: Promise<{ guardado?: string; creado?: string }>;
 }
 
 export default async function AdminReconocimientosPage({ searchParams }: AdminReconocimientosPageProps) {
   const params = await searchParams;
   const isSaved = params.guardado === '1';
+  const isCreated = params.creado === '1';
 
   let recognitions: AdminRecognition[] = [];
   let isError = false;
@@ -66,28 +67,50 @@ export default async function AdminReconocimientosPage({ searchParams }: AdminRe
   return (
     <AdminShell>
       
-      {/* Module Header */}
-      <AdminSectionHeader
-        title="Reconocimientos"
-        description="Administración de premios, menciones, homenajes, certificados y distinciones oficiales."
-        inPreparation={false}
-      />
+      {/* Module Header and Create Button */}
+      <div className="flex flex-col gap-4">
+        <AdminSectionHeader
+          title="Reconocimientos"
+          description="Administración de premios, menciones, homenajes, certificados y distinciones oficiales."
+          inPreparation={false}
+        />
+        <div className="flex justify-start">
+          <Link
+            href="/admin/reconocimientos/nuevo"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-earth-red text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-earth-red/90 transition-colors duration-200 font-mono shadow-sm"
+          >
+            NUEVO RECONOCIMIENTO
+          </Link>
+        </div>
+      </div>
 
-      {/* Aviso de éxito tras guardar */}
-      {isSaved && (
-        <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
-          <p className="text-xs text-emerald-800 font-bold font-mono">
-            Los cambios fueron guardados correctamente.
+      <div className="flex flex-col gap-4">
+        {/* Aviso de éxito tras guardar */}
+        {isSaved && (
+          <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+            <p className="text-xs text-emerald-800 font-bold font-mono">
+              Los cambios fueron guardados correctamente.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso de éxito tras crear */}
+        {isCreated && (
+          <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+            <p className="text-xs text-emerald-800 font-bold font-mono">
+              El reconocimiento fue creado correctamente.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso de edición habilitada */}
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+          <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
+            Edición inicial habilitada. El slug, las relaciones y los archivos asociados se administrarán en una etapa posterior.
           </p>
         </div>
-      )}
-
-      {/* Aviso de edición habilitada */}
-      <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
-        <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
-          Edición inicial habilitada. El slug, las relaciones y los archivos asociados se administrarán en una etapa posterior.
-        </p>
       </div>
+
 
       {isError ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">

@@ -143,3 +143,54 @@ export async function updateAdminRecognition(
   }
 }
 
+export interface NewAdminRecognition {
+  title: string;
+  slug: string;
+  recognition_type: string;
+  recognized_entity_type: string;
+  description: string | null;
+  granting_institution_name: string | null;
+  recognition_date: string | null;
+  source_reference: string | null;
+  is_featured: boolean;
+}
+
+/**
+ * Creates a new recognition record in public.recognitions.
+ * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
+ * to respect the database Row Level Security (RLS) configuration.
+ */
+export async function createAdminRecognition(
+  recognitionData: NewAdminRecognition
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { error } = await supabase
+      .from('recognitions')
+      .insert([recognitionData]);
+
+    if (error) {
+      console.error('Error inserting admin recognition:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('Unexpected error in createAdminRecognition:', err);
+    return { success: false, error: err.message || 'Ocurrió un error inesperado.' };
+  }
+}
+
+
