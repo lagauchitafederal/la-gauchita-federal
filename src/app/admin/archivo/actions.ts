@@ -105,17 +105,7 @@ export async function updateMediaAssetAction(
       return { success: false, error: 'Usuario no autenticado.' };
     }
 
-    // Check administrative roles
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('auth_user_id', user.id)
-      .maybeSingle();
-
-    if (!profile || !['super_admin', 'general_admin', 'federal_editor'].includes(profile.role)) {
-      return { success: false, error: 'No tiene permisos para modificar este archivo.' };
-    }
-
+    // Delegate authorization directly to database RLS policies
     const result = await updateAdminMediaAsset(id, assetData);
 
     if (result.success) {
