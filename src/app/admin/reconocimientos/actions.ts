@@ -14,6 +14,7 @@ export async function updateRecognitionAction(
     recognition_date: string | null;
     source_reference: string | null;
     is_featured: boolean;
+    status: string;
   }
 ) {
   const result = await updateAdminRecognition(id, updatedData);

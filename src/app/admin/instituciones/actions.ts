@@ -13,6 +13,7 @@ export async function updateInstitutionAction(
     website_url: string | null;
     is_featured: boolean;
     sort_order: number;
+    status: string;
   }
 ) {
   const result = await updateAdminInstitution(id, updatedData);

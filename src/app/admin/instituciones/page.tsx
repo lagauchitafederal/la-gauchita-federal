@@ -36,19 +36,25 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminInstitucionesPageProps {
-  searchParams: Promise<{ guardado?: string; creado?: string }>;
+  searchParams: Promise<{ guardado?: string; creado?: string; estado?: string }>;
 }
 
 export default async function AdminInstitucionesPage({ searchParams }: AdminInstitucionesPageProps) {
   const params = await searchParams;
   const isSaved = params.guardado === '1';
   const isCreated = params.creado === '1';
+  const selectedStatus = params.estado || 'todos';
 
   let institutions: AdminInstitution[] = [];
   let isError = false;
 
   try {
-    institutions = await getAdminInstitutionsList();
+    const rawInstitutions = await getAdminInstitutionsList();
+    if (selectedStatus === 'todos') {
+      institutions = rawInstitutions;
+    } else {
+      institutions = rawInstitutions.filter((i) => i.status === selectedStatus);
+    }
   } catch (error) {
     isError = true;
   }
@@ -98,19 +104,44 @@ export default async function AdminInstitucionesPage({ searchParams }: AdminInst
             Edición inicial habilitada. El slug, la ubicación territorial y las relaciones se administrarán en una etapa posterior.
           </p>
         </div>
-      </div>
 
+        {/* Filtro por Estado */}
+        <div className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-3 shadow-sm">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+            Filtrar por estado:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {['todos', 'draft', 'active', 'inactive', 'archived'].map((st) => {
+              const isActive = selectedStatus === st;
+              const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
+              return (
+                <Link
+                  key={st}
+                  href={`/admin/instituciones?estado=${st}`}
+                  className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-200 ${
+                    isActive
+                      ? 'bg-earth-red text-white border-earth-red'
+                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       {isError ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <p className="text-red-700 text-sm font-bold font-mono">
-            No se pudieron cargar las instituciones.
+            No se pudieron cargar los contenidos.
           </p>
         </div>
       ) : institutions.length === 0 ? (
-        <div className="bg-white border border-stone-beige rounded-lg p-12 text-center">
+        <div className="bg-white border border-stone-beige rounded-lg p-12 text-center shadow-sm">
           <p className="text-stone-500 text-sm italic font-mono">
-            No hay instituciones cargadas.
+            No hay registros para el estado seleccionado.
           </p>
         </div>
       ) : (
@@ -200,12 +231,14 @@ export default async function AdminInstitucionesPage({ searchParams }: AdminInst
                       {/* Acciones */}
                       <td className="p-4 text-right">
                         <div className="flex flex-col gap-2 justify-center items-end">
-                          <Link
+                          <a
                             href={`/instituciones/${inst.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center justify-center w-28 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150 text-center"
                           >
                             VER PÚBLICO
-                          </Link>
+                          </a>
                           <Link
                             href={`/admin/instituciones/${inst.id}/editar`}
                             className="inline-flex items-center justify-center w-28 py-1.5 bg-earth-red text-white rounded-md text-[10px] uppercase tracking-wider font-bold hover:bg-earth-red/90 transition-colors duration-150 text-center"

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import AdminShell from '../../../components/admin/AdminShell';
@@ -55,19 +55,25 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminArchivoPageProps {
-  searchParams: Promise<{ creado?: string; guardado?: string }>;
+  searchParams: Promise<{ creado?: string; guardado?: string; estado?: string }>;
 }
 
 export default async function AdminArchivoPage({ searchParams }: AdminArchivoPageProps) {
   const params = await searchParams;
   const isCreated = params.creado === '1';
   const isSaved = params.guardado === '1';
+  const selectedStatus = params.estado || 'todos';
 
   let assets: AdminMediaAsset[] = [];
   let isError = false;
 
   try {
-    assets = await getAdminMediaAssetsList();
+    const rawAssets = await getAdminMediaAssetsList();
+    if (selectedStatus === 'todos') {
+      assets = rawAssets;
+    } else {
+      assets = rawAssets.filter((a) => a.status === selectedStatus);
+    }
   } catch (error) {
     isError = true;
   }
@@ -117,6 +123,32 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
             Carga de archivos habilitada. Puede subir archivos de hasta 10 MB y asociarlos con contenidos o instituciones.
           </p>
         </div>
+
+        {/* Filtro por Estado */}
+        <div className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-3 shadow-sm">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+            Filtrar por estado:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {['todos', 'draft', 'active', 'archived'].map((st) => {
+              const isActive = selectedStatus === st;
+              const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
+              return (
+                <Link
+                  key={st}
+                  href={`/admin/archivo?estado=${st}`}
+                  className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-200 ${
+                    isActive
+                      ? 'bg-earth-red text-white border-earth-red'
+                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {isError ? (
@@ -126,9 +158,9 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
           </p>
         </div>
       ) : assets.length === 0 ? (
-        <div className="bg-white border border-stone-beige rounded-lg p-12 text-center">
+        <div className="bg-white border border-stone-beige rounded-lg p-12 text-center shadow-sm">
           <p className="text-stone-500 text-sm italic font-mono">
-            No hay archivos cargados.
+            No hay registros para el estado seleccionado.
           </p>
         </div>
       ) : (
@@ -277,4 +309,3 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
     </AdminShell>
   );
 }
-

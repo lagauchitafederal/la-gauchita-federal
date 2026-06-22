@@ -182,6 +182,9 @@ export default function EditContentForm({ content }: EditContentFormProps) {
               <option value="archived">Archivado</option>
               <option value="rejected">Rechazado</option>
             </select>
+            <span className="text-[10px] text-stone-400 font-mono">
+              El estado editorial determina si el contenido se encuentra en preparación, revisión o publicación.
+            </span>
           </div>
 
           {/* Visibility select */}

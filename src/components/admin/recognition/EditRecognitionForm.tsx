@@ -44,6 +44,7 @@ export default function EditRecognitionForm({ recognition }: EditRecognitionForm
   const [recognitionDate, setRecognitionDate] = useState(formatDateForInput(recognition.recognition_date));
   const [sourceReference, setSourceReference] = useState(recognition.source_reference || '');
   const [isFeatured, setIsFeatured] = useState(recognition.is_featured);
+  const [status, setStatus] = useState(recognition.status || 'draft');
 
   // Status message states
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,7 @@ export default function EditRecognitionForm({ recognition }: EditRecognitionForm
       recognition_date: recognitionDate || null,
       source_reference: sourceReference.trim() || null,
       is_featured: isFeatured,
+      status,
     };
 
     try {
@@ -214,6 +216,29 @@ export default function EditRecognitionForm({ recognition }: EditRecognitionForm
               <option value="false">No</option>
               <option value="true">Sí</option>
             </select>
+          </div>
+
+          {/* Status select */}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="status" className="text-[10px] uppercase tracking-wider font-bold text-stone-500">
+              Estado
+            </label>
+            <select
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              disabled={loading}
+              className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red transition-all duration-200 font-mono text-stone-750"
+            >
+              <option value="draft">Borrador</option>
+              <option value="review">En revisión</option>
+              <option value="active">Activo</option>
+              <option value="rejected">Rechazado</option>
+              <option value="archived">Archivado</option>
+            </select>
+            <span className="text-[10px] text-stone-400 font-mono">
+              El estado permite ordenar el proceso de verificación y publicación documental.
+            </span>
           </div>
 
           {/* Description textarea */}

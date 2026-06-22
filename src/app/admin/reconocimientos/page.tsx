@@ -47,19 +47,25 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminReconocimientosPageProps {
-  searchParams: Promise<{ guardado?: string; creado?: string }>;
+  searchParams: Promise<{ guardado?: string; creado?: string; estado?: string }>;
 }
 
 export default async function AdminReconocimientosPage({ searchParams }: AdminReconocimientosPageProps) {
   const params = await searchParams;
   const isSaved = params.guardado === '1';
   const isCreated = params.creado === '1';
+  const selectedStatus = params.estado || 'todos';
 
   let recognitions: AdminRecognition[] = [];
   let isError = false;
 
   try {
-    recognitions = await getAdminRecognitionsList();
+    const rawRecognitions = await getAdminRecognitionsList();
+    if (selectedStatus === 'todos') {
+      recognitions = rawRecognitions;
+    } else {
+      recognitions = rawRecognitions.filter((r) => r.status === selectedStatus);
+    }
   } catch (error) {
     isError = true;
   }
@@ -109,8 +115,33 @@ export default async function AdminReconocimientosPage({ searchParams }: AdminRe
             Edición inicial habilitada. El slug, las relaciones y los archivos asociados se administrarán en una etapa posterior.
           </p>
         </div>
-      </div>
 
+        {/* Filtro por Estado */}
+        <div className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-3 shadow-sm">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+            Filtrar por estado:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {['todos', 'draft', 'review', 'active', 'rejected', 'archived'].map((st) => {
+              const isActive = selectedStatus === st;
+              const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
+              return (
+                <Link
+                  key={st}
+                  href={`/admin/reconocimientos?estado=${st}`}
+                  className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-200 ${
+                    isActive
+                      ? 'bg-earth-red text-white border-earth-red'
+                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       {isError ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
@@ -119,9 +150,9 @@ export default async function AdminReconocimientosPage({ searchParams }: AdminRe
           </p>
         </div>
       ) : recognitions.length === 0 ? (
-        <div className="bg-white border border-stone-beige rounded-lg p-12 text-center">
+        <div className="bg-white border border-stone-beige rounded-lg p-12 text-center shadow-sm">
           <p className="text-stone-500 text-sm italic font-mono">
-            No hay reconocimientos cargados.
+            No hay registros para el estado seleccionado.
           </p>
         </div>
       ) : (
@@ -212,12 +243,14 @@ export default async function AdminReconocimientosPage({ searchParams }: AdminRe
                       {/* Acciones */}
                       <td className="p-4 text-right">
                         <div className="flex flex-col gap-2 justify-center items-end">
-                          <Link
+                          <a
                             href={`/reconocimientos/${rec.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center justify-center w-28 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-500 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150 text-center"
                           >
                             VER PÚBLICO
-                          </Link>
+                          </a>
                           <Link
                             href={`/admin/reconocimientos/${rec.id}/editar`}
                             className="inline-flex items-center justify-center w-28 py-1.5 bg-earth-red text-white rounded-md text-[10px] uppercase tracking-wider font-bold hover:bg-earth-red/90 transition-colors duration-150 text-center"

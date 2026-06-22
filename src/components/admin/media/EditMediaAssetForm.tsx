@@ -307,6 +307,9 @@ export default function EditMediaAssetForm({ asset, contents, institutions }: Ed
                   </option>
                 ))}
               </select>
+              <span className="text-[10px] text-stone-400 font-mono">
+                Solo los archivos activos deben considerarse disponibles para su uso editorial o público.
+              </span>
             </div>
 
             {/* Alt Text input */}

@@ -33,6 +33,7 @@ export default function EditInstitutionForm({ institution }: EditInstitutionForm
   const [websiteUrl, setWebsiteUrl] = useState(institution.website_url || '');
   const [isFeatured, setIsFeatured] = useState(institution.is_featured);
   const [sortOrder, setSortOrder] = useState(institution.sort_order.toString());
+  const [status, setStatus] = useState(institution.status || 'draft');
 
   // Status message states
   const [loading, setLoading] = useState(false);
@@ -50,6 +51,7 @@ export default function EditInstitutionForm({ institution }: EditInstitutionForm
       website_url: websiteUrl.trim() || null,
       is_featured: isFeatured,
       sort_order: parseInt(sortOrder, 10) || 0,
+      status,
     };
 
     try {
@@ -187,6 +189,28 @@ export default function EditInstitutionForm({ institution }: EditInstitutionForm
               disabled={loading}
               className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red transition-all duration-200 font-mono"
             />
+          </div>
+
+          {/* Status select */}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="status" className="text-[10px] uppercase tracking-wider font-bold text-stone-500">
+              Estado
+            </label>
+            <select
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              disabled={loading}
+              className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red transition-all duration-200 font-mono text-stone-750"
+            >
+              <option value="draft">Borrador</option>
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
+              <option value="archived">Archivado</option>
+            </select>
+            <span className="text-[10px] text-stone-400 font-mono">
+              Una institución activa puede ser visible en los espacios públicos correspondientes.
+            </span>
           </div>
 
           {/* Description textarea */}
