@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import AdminShell from '../../../components/admin/AdminShell';
 import AdminSectionHeader from '../../../components/admin/AdminSectionHeader';
 import { getAdminMediaAssetsList, AdminMediaAsset } from '../../../lib/admin/admin-media-assets';
@@ -53,7 +54,14 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
   rejected: { text: 'Rechazado', classes: 'bg-red-50 text-red-700 border-red-200/60' },
 };
 
-export default async function AdminArchivoPage() {
+interface AdminArchivoPageProps {
+  searchParams: Promise<{ creado?: string }>;
+}
+
+export default async function AdminArchivoPage({ searchParams }: AdminArchivoPageProps) {
+  const params = await searchParams;
+  const isCreated = params.creado === '1';
+
   let assets: AdminMediaAsset[] = [];
   let isError = false;
 
@@ -66,18 +74,39 @@ export default async function AdminArchivoPage() {
   return (
     <AdminShell>
       
-      {/* Module Header */}
-      <AdminSectionHeader
-        title="Archivo visual"
-        description="Administración de imágenes, documentos, certificados, portadas y materiales de archivo."
-        inPreparation={false}
-      />
+      {/* Module Header and Create Button */}
+      <div className="flex flex-col gap-4">
+        <AdminSectionHeader
+          title="Archivo visual"
+          description="Administración de imágenes, documentos, certificados, portadas y materiales de archivo."
+          inPreparation={false}
+        />
+        <div className="flex justify-start">
+          <Link
+            href="/admin/archivo/nuevo"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-earth-red text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-earth-red/90 transition-colors duration-200 font-mono shadow-sm"
+          >
+            SUBIR ARCHIVO
+          </Link>
+        </div>
+      </div>
 
-      {/* Aviso prudente solo lectura */}
-      <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
-        <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
-          Modo solo lectura. La subida, edición y asociación de archivos será incorporada en una próxima etapa.
-        </p>
+      <div className="flex flex-col gap-4">
+        {/* Aviso de éxito tras crear */}
+        {isCreated && (
+          <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+            <p className="text-xs text-emerald-800 font-bold font-mono">
+              El archivo fue registrado correctamente.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso de edición habilitada */}
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+          <p className="text-xs text-amber-800 font-bold uppercase tracking-wider font-mono">
+            Carga de archivos habilitada. Puede subir archivos de hasta 10 MB y asociarlos con contenidos o instituciones.
+          </p>
+        </div>
       </div>
 
       {isError ? (
