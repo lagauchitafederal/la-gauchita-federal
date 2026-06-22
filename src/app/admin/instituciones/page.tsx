@@ -8,7 +8,7 @@ import { getAdminInstitutionsList, AdminInstitution } from '../../../lib/admin/a
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Administración de Instituciones',
+  title: 'Administración de Instituciones - Búsqueda y Filtros',
   description: 'Gestión de la red cultural e institucional de La Gauchita Federal',
 };
 
@@ -36,25 +36,59 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminInstitucionesPageProps {
-  searchParams: Promise<{ guardado?: string; creado?: string; estado?: string }>;
+  searchParams: Promise<{ guardado?: string; creado?: string; estado?: string; q?: string; orden?: string }>;
 }
 
 export default async function AdminInstitucionesPage({ searchParams }: AdminInstitucionesPageProps) {
   const params = await searchParams;
   const isSaved = params.guardado === '1';
   const isCreated = params.creado === '1';
+  
+  // Extract and validate parameters
   const selectedStatus = params.estado || 'todos';
+  const searchQuery = params.q || '';
+  const allowedOrders = ['newest', 'oldest', 'name_asc', 'name_desc', 'featured_first', 'sort_order'];
+  const selectedOrder = allowedOrders.includes(params.orden || '') ? params.orden! : 'newest';
 
   let institutions: AdminInstitution[] = [];
   let isError = false;
 
   try {
     const rawInstitutions = await getAdminInstitutionsList();
-    if (selectedStatus === 'todos') {
-      institutions = rawInstitutions;
-    } else {
-      institutions = rawInstitutions.filter((i) => i.status === selectedStatus);
+    let filtered = rawInstitutions;
+
+    // 1. Filter by Status
+    if (selectedStatus !== 'todos') {
+      filtered = filtered.filter((i) => i.status === selectedStatus);
     }
+
+    // 2. Filter by Search Query (name, slug, institution_type, website_url)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((i) => {
+        const nameMatch = i.name?.toLowerCase().includes(query);
+        const slugMatch = i.slug?.toLowerCase().includes(query);
+        const typeLabel = TYPE_LABELS[i.institution_type] || i.institution_type;
+        const typeMatch = typeLabel.toLowerCase().includes(query) || i.institution_type?.toLowerCase().includes(query);
+        const websiteMatch = i.website_url?.toLowerCase().includes(query);
+        return nameMatch || slugMatch || typeMatch || websiteMatch;
+      });
+    }
+
+    // 3. Sort (Database is newest first by default)
+    if (selectedOrder === 'oldest') {
+      filtered = [...filtered].reverse();
+    } else if (selectedOrder === 'name_asc') {
+      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    } else if (selectedOrder === 'name_desc') {
+      filtered = [...filtered].sort((a, b) => b.name.localeCompare(a.name));
+    } else if (selectedOrder === 'featured_first') {
+      filtered = [...filtered].sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+    } else if (selectedOrder === 'sort_order') {
+      filtered = [...filtered].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    }
+
+    institutions = filtered;
   } catch (error) {
     isError = true;
   }
@@ -105,43 +139,112 @@ export default async function AdminInstitucionesPage({ searchParams }: AdminInst
           </p>
         </div>
 
-        {/* Filtro por Estado */}
-        <div className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-3 shadow-sm">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
-            Filtrar por estado:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {['todos', 'draft', 'active', 'inactive', 'archived'].map((st) => {
-              const isActive = selectedStatus === st;
-              const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
-              return (
-                <Link
-                  key={st}
-                  href={`/admin/instituciones?estado=${st}`}
-                  className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-200 ${
-                    isActive
-                      ? 'bg-earth-red text-white border-earth-red'
-                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
-                  }`}
-                >
-                  {label}
-                </Link>
-              );
-            })}
+        {/* Formulario de Búsqueda, Filtros y Ordenamiento */}
+        <form method="GET" action="/admin/instituciones" className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-4 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Campo de Búsqueda */}
+            <div className="flex flex-col gap-1.5 md:col-span-2">
+              <label htmlFor="q" className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+                Buscar por texto:
+              </label>
+              <input
+                id="q"
+                name="q"
+                type="text"
+                defaultValue={searchQuery}
+                placeholder="Escriba nombre, tipo, slug o sitio web..."
+                className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono"
+              />
+            </div>
+            
+            {/* Selector de Orden */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="orden" className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+                Ordenar por:
+              </label>
+              <select
+                id="orden"
+                name="orden"
+                defaultValue={selectedOrder}
+                className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono text-stone-700 bg-white"
+              >
+                <option value="newest">Más recientes primero</option>
+                <option value="oldest">Más antiguos primero</option>
+                <option value="name_asc">Nombre A–Z</option>
+                <option value="name_desc">Nombre Z–A</option>
+                <option value="featured_first">Destacadas primero</option>
+                <option value="sort_order">Orden de prioridad</option>
+              </select>
+            </div>
+
           </div>
-        </div>
+
+          {/* Filtro de Estado (Botones) */}
+          <div className="flex flex-col gap-2 border-t border-stone-100 pt-3">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+              Filtrar por estado:
+            </span>
+            <input type="hidden" name="estado" value={selectedStatus} />
+            <div className="flex flex-wrap gap-1.5">
+              {['todos', 'draft', 'active', 'inactive', 'archived'].map((st) => {
+                const isActive = selectedStatus === st;
+                const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
+                const href = `/admin/instituciones?estado=${st}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}&orden=${selectedOrder}`;
+                return (
+                  <Link
+                    key={st}
+                    href={href}
+                    className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-250 ${
+                      isActive
+                        ? 'bg-earth-red text-white border-earth-red shadow-sm'
+                        : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Resumen, Limpiar y Envío */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-3">
+            <span className="text-[11px] font-mono font-bold text-stone-650">
+              Mostrando {institutions.length} registros
+            </span>
+            
+            <div className="flex items-center gap-3">
+              {(searchQuery || selectedStatus !== 'todos' || selectedOrder !== 'newest') && (
+                <Link
+                  href="/admin/instituciones"
+                  className="text-[11px] font-mono font-bold text-stone-500 hover:text-earth-red border-b border-stone-300 hover:border-earth-red transition-all duration-150"
+                >
+                  Limpiar filtros
+                </Link>
+              )}
+              <button
+                type="submit"
+                className="px-4 py-2 bg-charcoal hover:bg-charcoal/90 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors duration-150"
+              >
+                Buscar / Aplicar
+              </button>
+            </div>
+          </div>
+        </form>
+
       </div>
 
       {isError ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <p className="text-red-700 text-sm font-bold font-mono">
-            No se pudieron cargar los contenidos.
+            No se pudieron cargar las instituciones.
           </p>
         </div>
       ) : institutions.length === 0 ? (
         <div className="bg-white border border-stone-beige rounded-lg p-12 text-center shadow-sm">
           <p className="text-stone-500 text-sm italic font-mono">
-            No hay registros para el estado seleccionado.
+            No hay registros que coincidan con los filtros seleccionados.
           </p>
         </div>
       ) : (

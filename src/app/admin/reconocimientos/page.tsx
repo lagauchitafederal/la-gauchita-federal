@@ -8,7 +8,7 @@ import { getAdminRecognitionsList, AdminRecognition } from '../../../lib/admin/a
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Administración de Reconocimientos',
+  title: 'Administración de Reconocimientos - Búsqueda y Filtros',
   description: 'Gestión de trayectoria, premios y avales de La Gauchita Federal',
 };
 
@@ -47,25 +47,70 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminReconocimientosPageProps {
-  searchParams: Promise<{ guardado?: string; creado?: string; estado?: string }>;
+  searchParams: Promise<{ guardado?: string; creado?: string; estado?: string; q?: string; orden?: string }>;
 }
 
 export default async function AdminReconocimientosPage({ searchParams }: AdminReconocimientosPageProps) {
   const params = await searchParams;
   const isSaved = params.guardado === '1';
   const isCreated = params.creado === '1';
+  
+  // Extract and validate parameters
   const selectedStatus = params.estado || 'todos';
+  const searchQuery = params.q || '';
+  const allowedOrders = ['newest', 'oldest', 'title_asc', 'title_desc', 'recognition_date_desc', 'recognition_date_asc', 'featured_first'];
+  const selectedOrder = allowedOrders.includes(params.orden || '') ? params.orden! : 'newest';
 
   let recognitions: AdminRecognition[] = [];
   let isError = false;
 
   try {
     const rawRecognitions = await getAdminRecognitionsList();
-    if (selectedStatus === 'todos') {
-      recognitions = rawRecognitions;
-    } else {
-      recognitions = rawRecognitions.filter((r) => r.status === selectedStatus);
+    let filtered = rawRecognitions;
+
+    // 1. Filter by Status
+    if (selectedStatus !== 'todos') {
+      filtered = filtered.filter((r) => r.status === selectedStatus);
     }
+
+    // 2. Filter by Search Query (title, slug, recognition_type, granting_institution_name, source_reference)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((r) => {
+        const titleMatch = r.title?.toLowerCase().includes(query);
+        const slugMatch = r.slug?.toLowerCase().includes(query);
+        const typeLabel = RECOGNITION_TYPES[r.recognition_type] || r.recognition_type;
+        const typeMatch = typeLabel.toLowerCase().includes(query) || r.recognition_type?.toLowerCase().includes(query);
+        const grantingMatch = r.granting_institution_name?.toLowerCase().includes(query);
+        const sourceMatch = r.source_reference?.toLowerCase().includes(query);
+        return titleMatch || slugMatch || typeMatch || grantingMatch || sourceMatch;
+      });
+    }
+
+    // 3. Sort (Database is newest first by default)
+    if (selectedOrder === 'oldest') {
+      filtered = [...filtered].reverse();
+    } else if (selectedOrder === 'title_asc') {
+      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    } else if (selectedOrder === 'title_desc') {
+      filtered = [...filtered].sort((a, b) => b.title.localeCompare(a.title));
+    } else if (selectedOrder === 'recognition_date_desc') {
+      filtered = [...filtered].sort((a, b) => {
+        const da = a.recognition_date ? new Date(a.recognition_date).getTime() : 0;
+        const db = b.recognition_date ? new Date(b.recognition_date).getTime() : 0;
+        return db - da;
+      });
+    } else if (selectedOrder === 'recognition_date_asc') {
+      filtered = [...filtered].sort((a, b) => {
+        const da = a.recognition_date ? new Date(a.recognition_date).getTime() : 0;
+        const db = b.recognition_date ? new Date(b.recognition_date).getTime() : 0;
+        return da - db;
+      });
+    } else if (selectedOrder === 'featured_first') {
+      filtered = [...filtered].sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+    }
+
+    recognitions = filtered;
   } catch (error) {
     isError = true;
   }
@@ -116,31 +161,101 @@ export default async function AdminReconocimientosPage({ searchParams }: AdminRe
           </p>
         </div>
 
-        {/* Filtro por Estado */}
-        <div className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-3 shadow-sm">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
-            Filtrar por estado:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {['todos', 'draft', 'review', 'active', 'rejected', 'archived'].map((st) => {
-              const isActive = selectedStatus === st;
-              const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
-              return (
-                <Link
-                  key={st}
-                  href={`/admin/reconocimientos?estado=${st}`}
-                  className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-200 ${
-                    isActive
-                      ? 'bg-earth-red text-white border-earth-red'
-                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
-                  }`}
-                >
-                  {label}
-                </Link>
-              );
-            })}
+        {/* Formulario de Búsqueda, Filtros y Ordenamiento */}
+        <form method="GET" action="/admin/reconocimientos" className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-4 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Campo de Búsqueda */}
+            <div className="flex flex-col gap-1.5 md:col-span-2">
+              <label htmlFor="q" className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+                Buscar por texto:
+              </label>
+              <input
+                id="q"
+                name="q"
+                type="text"
+                defaultValue={searchQuery}
+                placeholder="Escriba título, otorgante, tipo o referencia..."
+                className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono"
+              />
+            </div>
+            
+            {/* Selector de Orden */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="orden" className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+                Ordenar por:
+              </label>
+              <select
+                id="orden"
+                name="orden"
+                defaultValue={selectedOrder}
+                className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono text-stone-700 bg-white"
+              >
+                <option value="newest">Más recientes primero</option>
+                <option value="oldest">Más antiguos primero</option>
+                <option value="title_asc">Título A–Z</option>
+                <option value="title_desc">Título Z–A</option>
+                <option value="recognition_date_desc">Fecha de otorgamiento (Reciente)</option>
+                <option value="recognition_date_asc">Fecha de otorgamiento (Antiguo)</option>
+                <option value="featured_first">Destacados primero</option>
+              </select>
+            </div>
+
           </div>
-        </div>
+
+          {/* Filtro de Estado (Botones) */}
+          <div className="flex flex-col gap-2 border-t border-stone-100 pt-3">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+              Filtrar por estado:
+            </span>
+            <input type="hidden" name="estado" value={selectedStatus} />
+            <div className="flex flex-wrap gap-1.5">
+              {['todos', 'draft', 'review', 'active', 'rejected', 'archived'].map((st) => {
+                const isActive = selectedStatus === st;
+                const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
+                const href = `/admin/reconocimientos?estado=${st}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}&orden=${selectedOrder}`;
+                return (
+                  <Link
+                    key={st}
+                    href={href}
+                    className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-250 ${
+                      isActive
+                        ? 'bg-earth-red text-white border-earth-red shadow-sm'
+                        : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Resumen, Limpiar y Envío */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-3">
+            <span className="text-[11px] font-mono font-bold text-stone-650">
+              Mostrando {recognitions.length} registros
+            </span>
+            
+            <div className="flex items-center gap-3">
+              {(searchQuery || selectedStatus !== 'todos' || selectedOrder !== 'newest') && (
+                <Link
+                  href="/admin/reconocimientos"
+                  className="text-[11px] font-mono font-bold text-stone-500 hover:text-earth-red border-b border-stone-300 hover:border-earth-red transition-all duration-150"
+                >
+                  Limpiar filtros
+                </Link>
+              )}
+              <button
+                type="submit"
+                className="px-4 py-2 bg-charcoal hover:bg-charcoal/90 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors duration-150"
+              >
+                Buscar / Aplicar
+              </button>
+            </div>
+          </div>
+        </form>
+
       </div>
 
       {isError ? (
@@ -152,7 +267,7 @@ export default async function AdminReconocimientosPage({ searchParams }: AdminRe
       ) : recognitions.length === 0 ? (
         <div className="bg-white border border-stone-beige rounded-lg p-12 text-center shadow-sm">
           <p className="text-stone-500 text-sm italic font-mono">
-            No hay registros para el estado seleccionado.
+            No hay registros que coincidan con los filtros seleccionados.
           </p>
         </div>
       ) : (

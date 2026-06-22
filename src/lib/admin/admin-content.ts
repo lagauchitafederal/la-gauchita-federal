@@ -11,6 +11,8 @@ export interface AdminContent {
   author: { display_name: string | null } | null;
   content_type: { name: string } | null;
   category: { name: string } | null;
+  subtitle?: string | null;
+  summary?: string | null;
 }
 
 /**
@@ -44,7 +46,9 @@ export async function getAdminContentsList(): Promise<AdminContent[]> {
         publish_date,
         profiles(display_name),
         content_types(name),
-        categories(name)
+        categories(name),
+        subtitle,
+        summary
       `)
       .order('created_at', { ascending: false });
 
@@ -62,6 +66,8 @@ export async function getAdminContentsList(): Promise<AdminContent[]> {
       author: Array.isArray(item.profiles) ? item.profiles[0] || null : item.profiles || null,
       content_type: Array.isArray(item.content_types) ? item.content_types[0] || null : item.content_types || null,
       category: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null,
+      subtitle: item.subtitle,
+      summary: item.summary,
     })) as AdminContent[];
   } catch (err) {
     console.error('Unexpected error in getAdminContentsList:', err);

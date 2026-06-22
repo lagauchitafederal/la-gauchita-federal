@@ -11,6 +11,8 @@ export interface AdminInstitution {
   is_featured: boolean;
   province: { name: string } | null;
   municipality: { name: string } | null;
+  website_url?: string | null;
+  sort_order?: number;
 }
 
 /**
@@ -44,7 +46,9 @@ export async function getAdminInstitutionsList(): Promise<AdminInstitution[]> {
         status,
         is_featured,
         provinces(name),
-        municipalities(name)
+        municipalities(name),
+        website_url,
+        sort_order
       `)
       .order('created_at', { ascending: false });
 
@@ -62,6 +66,8 @@ export async function getAdminInstitutionsList(): Promise<AdminInstitution[]> {
       is_featured: item.is_featured,
       province: Array.isArray(item.provinces) ? item.provinces[0] || null : item.provinces || null,
       municipality: Array.isArray(item.municipalities) ? item.municipalities[0] || null : item.municipalities || null,
+      website_url: item.website_url,
+      sort_order: item.sort_order,
     })) as AdminInstitution[];
   } catch (err) {
     console.error('Unexpected error in getAdminInstitutionsList:', err);

@@ -12,6 +12,8 @@ export interface AdminRecognition {
   recognition_date: string | null;
   status: string;
   location: string | null;
+  source_reference?: string | null;
+  is_featured?: boolean;
 }
 
 /**
@@ -37,7 +39,7 @@ export async function getAdminRecognitionsList(): Promise<AdminRecognition[]> {
 
     const { data, error } = await supabase
       .from('recognitions')
-      .select('id, title, slug, recognition_type, recognized_entity_type, granting_institution_name, recognition_date, status, location')
+      .select('id, title, slug, recognition_type, recognized_entity_type, granting_institution_name, recognition_date, status, location, source_reference, is_featured')
       .order('created_at', { ascending: false });
 
     if (error) {

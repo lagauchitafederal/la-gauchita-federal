@@ -9,7 +9,7 @@ import { getPublicMediaUrl } from '../../../lib/utils/media-url';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Administración de Archivo Visual',
+  title: 'Administración de Archivo Visual - Búsqueda y Filtros',
   description: 'Gestión de recursos multimedia, portadas y certificados de La Gauchita Federal',
 };
 
@@ -55,25 +55,59 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminArchivoPageProps {
-  searchParams: Promise<{ creado?: string; guardado?: string; estado?: string }>;
+  searchParams: Promise<{ creado?: string; guardado?: string; estado?: string; q?: string; orden?: string }>;
 }
 
 export default async function AdminArchivoPage({ searchParams }: AdminArchivoPageProps) {
   const params = await searchParams;
   const isCreated = params.creado === '1';
   const isSaved = params.guardado === '1';
+  
+  // Extract and validate parameters
   const selectedStatus = params.estado || 'todos';
+  const searchQuery = params.q || '';
+  const allowedOrders = ['newest', 'oldest', 'title_asc', 'title_desc', 'asset_type', 'status'];
+  const selectedOrder = allowedOrders.includes(params.orden || '') ? params.orden! : 'newest';
 
   let assets: AdminMediaAsset[] = [];
   let isError = false;
 
   try {
     const rawAssets = await getAdminMediaAssetsList();
-    if (selectedStatus === 'todos') {
-      assets = rawAssets;
-    } else {
-      assets = rawAssets.filter((a) => a.status === selectedStatus);
+    let filtered = rawAssets;
+
+    // 1. Filter by Status
+    if (selectedStatus !== 'todos') {
+      filtered = filtered.filter((a) => a.status === selectedStatus);
     }
+
+    // 2. Filter by Search Query (title, original_filename, credit, source_reference, storage_path)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((a) => {
+        const titleMatch = a.title?.toLowerCase().includes(query);
+        const filenameMatch = a.original_filename?.toLowerCase().includes(query);
+        const creditMatch = a.credit?.toLowerCase().includes(query);
+        const sourceMatch = a.source_reference?.toLowerCase().includes(query);
+        const pathMatch = a.storage_path?.toLowerCase().includes(query);
+        return titleMatch || filenameMatch || creditMatch || sourceMatch || pathMatch;
+      });
+    }
+
+    // 3. Sort (Database is newest first by default)
+    if (selectedOrder === 'oldest') {
+      filtered = [...filtered].reverse();
+    } else if (selectedOrder === 'title_asc') {
+      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    } else if (selectedOrder === 'title_desc') {
+      filtered = [...filtered].sort((a, b) => b.title.localeCompare(a.title));
+    } else if (selectedOrder === 'asset_type') {
+      filtered = [...filtered].sort((a, b) => a.asset_type.localeCompare(b.asset_type));
+    } else if (selectedOrder === 'status') {
+      filtered = [...filtered].sort((a, b) => a.status.localeCompare(b.status));
+    }
+
+    assets = filtered;
   } catch (error) {
     isError = true;
   }
@@ -124,31 +158,99 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
           </p>
         </div>
 
-        {/* Filtro por Estado */}
-        <div className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-3 shadow-sm">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
-            Filtrar por estado:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {['todos', 'draft', 'active', 'archived'].map((st) => {
-              const isActive = selectedStatus === st;
-              const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
-              return (
-                <Link
-                  key={st}
-                  href={`/admin/archivo?estado=${st}`}
-                  className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-200 ${
-                    isActive
-                      ? 'bg-earth-red text-white border-earth-red'
-                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
-                  }`}
-                >
-                  {label}
-                </Link>
-              );
-            })}
+        {/* Formulario de Búsqueda, Filtros y Ordenamiento */}
+        <form method="GET" action="/admin/archivo" className="bg-white border border-stone-beige rounded-lg p-4 flex flex-col gap-4 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Campo de Búsqueda */}
+            <div className="flex flex-col gap-1.5 md:col-span-2">
+              <label htmlFor="q" className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+                Buscar por texto:
+              </label>
+              <input
+                id="q"
+                name="q"
+                type="text"
+                defaultValue={searchQuery}
+                placeholder="Escriba título, crédito, nombre original o fuente..."
+                className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono"
+              />
+            </div>
+            
+            {/* Selector de Orden */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="orden" className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+                Ordenar por:
+              </label>
+              <select
+                id="orden"
+                name="orden"
+                defaultValue={selectedOrder}
+                className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono text-stone-700 bg-white"
+              >
+                <option value="newest">Más recientes primero</option>
+                <option value="oldest">Más antiguos primero</option>
+                <option value="title_asc">Título A–Z</option>
+                <option value="title_desc">Título Z–A</option>
+                <option value="asset_type">Tipo de recurso</option>
+                <option value="status">Estado del archivo</option>
+              </select>
+            </div>
+
           </div>
-        </div>
+
+          {/* Filtro de Estado (Botones) */}
+          <div className="flex flex-col gap-2 border-t border-stone-100 pt-3">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+              Filtrar por estado:
+            </span>
+            <input type="hidden" name="estado" value={selectedStatus} />
+            <div className="flex flex-wrap gap-1.5">
+              {['todos', 'draft', 'active', 'archived'].map((st) => {
+                const isActive = selectedStatus === st;
+                const label = st === 'todos' ? 'Todos' : STATUS_LABELS[st]?.text || st;
+                const href = `/admin/archivo?estado=${st}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}&orden=${selectedOrder}`;
+                return (
+                  <Link
+                    key={st}
+                    href={href}
+                    className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider font-mono border transition-all duration-250 ${
+                      isActive
+                        ? 'bg-earth-red text-white border-earth-red shadow-sm'
+                        : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Resumen, Limpiar y Envío */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-3">
+            <span className="text-[11px] font-mono font-bold text-stone-650">
+              Mostrando {assets.length} registros
+            </span>
+            
+            <div className="flex items-center gap-3">
+              {(searchQuery || selectedStatus !== 'todos' || selectedOrder !== 'newest') && (
+                <Link
+                  href="/admin/archivo"
+                  className="text-[11px] font-mono font-bold text-stone-500 hover:text-earth-red border-b border-stone-300 hover:border-earth-red transition-all duration-150"
+                >
+                  Limpiar filtros
+                </Link>
+              )}
+              <button
+                type="submit"
+                className="px-4 py-2 bg-charcoal hover:bg-charcoal/90 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors duration-150"
+              >
+                Buscar / Aplicar
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
 
       {isError ? (
@@ -160,7 +262,7 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
       ) : assets.length === 0 ? (
         <div className="bg-white border border-stone-beige rounded-lg p-12 text-center shadow-sm">
           <p className="text-stone-500 text-sm italic font-mono">
-            No hay registros para el estado seleccionado.
+            No hay registros que coincidan con los filtros seleccionados.
           </p>
         </div>
       ) : (
