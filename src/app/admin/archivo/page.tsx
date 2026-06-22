@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import AdminShell from '../../../components/admin/AdminShell';
@@ -55,12 +55,13 @@ const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
 };
 
 interface AdminArchivoPageProps {
-  searchParams: Promise<{ creado?: string }>;
+  searchParams: Promise<{ creado?: string; guardado?: string }>;
 }
 
 export default async function AdminArchivoPage({ searchParams }: AdminArchivoPageProps) {
   const params = await searchParams;
   const isCreated = params.creado === '1';
+  const isSaved = params.guardado === '1';
 
   let assets: AdminMediaAsset[] = [];
   let isError = false;
@@ -97,6 +98,15 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
           <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
             <p className="text-xs text-emerald-800 font-bold font-mono">
               El archivo fue registrado correctamente.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso de éxito tras editar */}
+        {isSaved && (
+          <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-md">
+            <p className="text-xs text-emerald-800 font-bold font-mono">
+              Los cambios fueron guardados correctamente.
             </p>
           </div>
         )}
@@ -232,8 +242,14 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
                       </td>
 
                       {/* Acciones */}
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-right font-mono">
                         <div className="flex justify-end items-center gap-3">
+                          <Link
+                            href={`/admin/archivo/${c.id}/editar`}
+                            className="inline-flex items-center justify-center px-3 py-1.5 border border-stone-beige rounded-md text-[10px] uppercase tracking-wider font-bold text-stone-700 hover:text-earth-red hover:border-earth-red/30 transition-colors duration-150"
+                          >
+                            EDITAR
+                          </Link>
                           {publicUrl ? (
                             <a
                               href={publicUrl}
@@ -261,3 +277,4 @@ export default async function AdminArchivoPage({ searchParams }: AdminArchivoPag
     </AdminShell>
   );
 }
+

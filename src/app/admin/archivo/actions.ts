@@ -1,6 +1,6 @@
 'use server';
 
-import { createAdminMediaAsset } from '../../../lib/admin/admin-media-assets';
+import { createAdminMediaAsset, updateAdminMediaAsset } from '../../../lib/admin/admin-media-assets';
 import { createClient } from '@supabase/supabase-js';
 import { getEnv } from '../../../lib/supabase/env';
 import { cookies } from 'next/headers';
@@ -66,5 +66,64 @@ export async function createMediaAssetAction(
   } catch (err: any) {
     console.error('Error in createMediaAssetAction:', err);
     return { success: false, error: err.message || 'Ocurrió un error inesperado al registrar el archivo.' };
+  }
+}
+
+export async function updateMediaAssetAction(
+  id: string,
+  assetData: {
+    title: string;
+    description: string | null;
+    alt_text: string | null;
+    credit: string | null;
+    source_reference: string | null;
+    asset_type: string;
+    rights_status: string;
+    visibility: string;
+    status: string;
+    content_id: string | null;
+    institution_id: string | null;
+  }
+) {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    // Check user authentication
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: 'Usuario no autenticado.' };
+    }
+
+    // Check administrative roles
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+
+    if (!profile || !['super_admin', 'general_admin', 'federal_editor'].includes(profile.role)) {
+      return { success: false, error: 'No tiene permisos para modificar este archivo.' };
+    }
+
+    const result = await updateAdminMediaAsset(id, assetData);
+
+    if (result.success) {
+      revalidatePath('/admin/archivo');
+    }
+    return result;
+  } catch (err: any) {
+    console.error('Error in updateMediaAssetAction:', err);
+    return { success: false, error: err.message || 'Ocurrió un error inesperado al actualizar el archivo.' };
   }
 }

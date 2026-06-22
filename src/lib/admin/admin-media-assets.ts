@@ -21,6 +21,11 @@ export interface AdminMediaAsset {
   created_at: string;
 }
 
+export interface AdminMediaAssetDetail extends AdminMediaAsset {
+  content_id: string | null;
+  institution_id: string | null;
+}
+
 /**
  * Fetches all media assets from public.media_assets for administrative list display.
  * Reads the 'sb-access-token' cookie to initialize the user's Supabase instance
@@ -59,6 +64,42 @@ export async function getAdminMediaAssetsList(): Promise<AdminMediaAsset[]> {
   }
 }
 
+/**
+ * Fetches a single media asset detail by ID.
+ */
+export async function getAdminMediaAssetById(id: string): Promise<AdminMediaAssetDetail | null> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { data, error } = await supabase
+      .from('media_assets')
+      .select('id, title, description, asset_type, bucket_name, storage_path, mime_type, file_size_bytes, original_filename, alt_text, credit, source_reference, rights_status, visibility, status, created_at, content_id, institution_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching admin media asset detail:', error);
+      throw error;
+    }
+
+    return data as AdminMediaAssetDetail | null;
+  } catch (err) {
+    console.error('Unexpected error in getAdminMediaAssetById:', err);
+    throw err;
+  }
+}
+
 export interface NewAdminMediaAsset {
   content_id: string | null;
   institution_id: string | null;
@@ -77,6 +118,20 @@ export interface NewAdminMediaAsset {
   rights_status: string;
   visibility: string;
   status: string;
+}
+
+export interface UpdateAdminMediaAsset {
+  title: string;
+  description: string | null;
+  alt_text: string | null;
+  credit: string | null;
+  source_reference: string | null;
+  asset_type: string;
+  rights_status: string;
+  visibility: string;
+  status: string;
+  content_id: string | null;
+  institution_id: string | null;
 }
 
 /**
@@ -117,3 +172,40 @@ export async function createAdminMediaAsset(
   }
 }
 
+/**
+ * Updates an existing media asset record in public.media_assets.
+ */
+export async function updateAdminMediaAsset(
+  id: string,
+  assetData: UpdateAdminMediaAsset
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getEnv();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    const { error } = await supabase
+      .from('media_assets')
+      .update(assetData)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating admin media asset:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('Unexpected error in updateAdminMediaAsset:', err);
+    return { success: false, error: err.message || 'Ocurrió un error inesperado.' };
+  }
+}
