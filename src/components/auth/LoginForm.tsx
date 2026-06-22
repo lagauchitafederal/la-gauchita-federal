@@ -84,9 +84,17 @@ export default function LoginForm() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-[10px] uppercase tracking-wider font-bold text-stone-500">
-            Contraseña
-          </label>
+          <div className="flex justify-between items-center">
+            <label htmlFor="password" className="text-[10px] uppercase tracking-wider font-bold text-stone-500">
+              Contraseña
+            </label>
+            <Link
+              href="/recuperar-contrasena"
+              className="text-[10px] text-stone-500 hover:text-earth-red transition-colors duration-200 font-mono"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
           <input
             id="password"
             type="password"
