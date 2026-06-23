@@ -23,6 +23,7 @@ export interface PublicContent {
 
 
 export interface PublicContentDetail extends PublicContent {
+  id: string;
   body: string | null;
   source_reference: string | null;
 }
@@ -190,7 +191,7 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, body, event_date, publish_date, is_featured, source_reference, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name)')
+      .select('id, title, slug, subtitle, summary, body, event_date, publish_date, is_featured, source_reference, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name)')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -202,6 +203,7 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
     if (!data) return null;
     const item = data as any;
     return {
+      id: item.id,
       title: item.title,
       slug: item.slug,
       subtitle: item.subtitle,

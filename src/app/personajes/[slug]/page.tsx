@@ -6,6 +6,8 @@ import { getPublishedPersonBySlug, PublicPerson } from '../../../lib/public-cont
 import { getArgentinaDateParts, formatHistoricalDate } from '../../../lib/utils/date';
 import { getPublicMediaUrl } from '../../../lib/utils/media-url';
 import PublicPageShell from '../../../components/public/PublicPageShell';
+import { getPublicEditorialRelations } from '../../../lib/public-content/public-editorial-relations';
+import PublicEditorialRelations from '../../../components/public/PublicEditorialRelations';
 
 export const dynamic = 'force-dynamic';
 
@@ -117,6 +119,10 @@ export default async function PersonajeDetailPage({ params }: PersonajeDetailPag
   if (!person) {
     notFound();
   }
+
+  const [relations] = await Promise.all([
+    getPublicEditorialRelations('person', person.id)
+  ]);
 
   const imageUrl = person.media_assets ? getPublicMediaUrl(person.media_assets.bucket_name, person.media_assets.storage_path) : null;
   const ageStats = calculateAges(person.birth_date, person.death_date);
@@ -250,15 +256,8 @@ export default async function PersonajeDetailPage({ params }: PersonajeDetailPag
           </section>
         )}
 
-        {/* Prepared section for future relations */}
-        <section className="bg-[#fcf8f2] border border-stone-beige rounded-lg shadow-sm p-6 sm:p-8 mt-2">
-          <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-charcoal mb-3">
-            Efemérides, contenidos y publicaciones vinculadas
-          </h3>
-          <div className="bg-white/80 border border-stone-beige/80 p-4 rounded-md text-xs text-stone-500 font-mono italic">
-            Próximamente se listarán las efemérides históricas, publicaciones editoriales y otros contenidos relacionados con esta personalidad.
-          </div>
-        </section>
+        {/* Public Editorial Relations */}
+        <PublicEditorialRelations relations={relations} />
 
       </div>
     </PublicPageShell>
