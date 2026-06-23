@@ -17,6 +17,15 @@ const TYPE_LABELS: Record<string, string> = {
   other: 'Otro',
 };
 
+const WEBSITE_URL_PATTERN = /^https?:\/\/((?!(?:localhost)(?:[:/]|$))(?!.*\.\.)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?::\d+)?(?:\/[^\s]*)?)$/i;
+
+function isValidWebsiteUrl(urlStr: string | null | undefined): boolean {
+  if (!urlStr) return true;
+  const trimmed = urlStr.trim();
+  if (trimmed === '') return true;
+  return WEBSITE_URL_PATTERN.test(trimmed);
+}
+
 export default function NewInstitutionForm() {
   // Form states
   const [name, setName] = useState('');
@@ -29,19 +38,50 @@ export default function NewInstitutionForm() {
   // Status message states
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [websiteUrlError, setWebsiteUrlError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg(null);
+    setWebsiteUrlError(null);
+
+    const cleanName = name.trim();
+    if (!cleanName) {
+      setErrorMsg('El nombre es obligatorio y no puede consistir solo de espacios vacíos.');
+      return;
+    }
+    if (cleanName.length > 180) {
+      setErrorMsg('El nombre supera el límite de 180 caracteres.');
+      return;
+    }
+    if (!institutionType) {
+      setErrorMsg('El tipo de institución es obligatorio.');
+      return;
+    }
+    const webVal = websiteUrl.trim();
+    const finalWebsiteUrl = webVal === '' ? null : webVal;
+
+    if (finalWebsiteUrl && !isValidWebsiteUrl(finalWebsiteUrl)) {
+      setWebsiteUrlError('No se guardó la institución. Ingresá una dirección web válida con http:// o https://.');
+      return;
+    }
+    if (sortOrder.trim() !== '') {
+      const orderNum = Number(sortOrder);
+      if (!Number.isInteger(orderNum) || orderNum < 0) {
+        setErrorMsg('El orden de prioridad debe ser un número entero mayor o igual a 0.');
+        return;
+      }
+    }
+
+    setLoading(true);
 
     const newInstitutionData = {
-      name: name.trim(),
+      name: cleanName,
       institution_type: institutionType,
       description: description.trim() || null,
-      website_url: websiteUrl.trim() || null,
+      website_url: finalWebsiteUrl,
       is_featured: isFeatured,
-      sort_order: parseInt(sortOrder, 10) || 0,
+      sort_order: sortOrder.trim() !== '' ? parseInt(sortOrder, 10) : 0,
     };
 
     try {
@@ -49,7 +89,11 @@ export default function NewInstitutionForm() {
       if (res.success) {
         window.location.href = '/admin/instituciones?creado=1';
       } else {
-        setErrorMsg(res.error || 'Ocurrió un error al intentar crear la institución.');
+        if (res.error && (res.error.includes('Ingresá') || res.error.includes('dirección') || res.error.includes('válida') || res.error.includes('web'))) {
+          setWebsiteUrlError('No se guardó la institución. Ingresá una dirección web válida con http:// o https://.');
+        } else {
+          setErrorMsg(res.error || 'Ocurrió un error al intentar crear la institución.');
+        }
         setLoading(false);
       }
     } catch (err: any) {
@@ -125,13 +169,29 @@ export default function NewInstitutionForm() {
             </label>
             <input
               id="websiteUrl"
-              type="url"
+              type="text"
               value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
+              onChange={(e) => {
+                setWebsiteUrl(e.target.value);
+                setWebsiteUrlError(null);
+              }}
               disabled={loading}
               placeholder="https://ejemplo.org"
               className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red transition-all duration-200"
             />
+            {websiteUrlError ? (
+              <div 
+                role="alert" 
+                aria-live="polite"
+                className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-800 font-mono"
+              >
+                {websiteUrlError}
+              </div>
+            ) : (
+              <span className="text-[10px] text-stone-400 font-mono mt-1 block">
+                Ejemplo: https://www.ejemplo.org
+              </span>
+            )}
           </div>
 
           {/* Is Featured select */}
