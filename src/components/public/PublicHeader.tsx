@@ -6,6 +6,7 @@ import { parseTerritoryCookie } from '../../lib/utils/territory';
 const publicLinks = [
   { href: '/', label: 'Inicio' },
   { href: '/contenidos', label: 'Contenidos' },
+  { href: '/personajes', label: 'Personajes' },
   { href: '/instituciones', label: 'Instituciones' },
   { href: '/reconocimientos', label: 'Reconocimientos' },
   { href: '/archivo', label: 'Archivo' },
