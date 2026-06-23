@@ -11,6 +11,43 @@ interface AdminShellProps {
 
 export default function AdminShell({ children }: AdminShellProps) {
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    async function checkRole() {
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .maybeSingle();
+        if (!profile) return;
+
+        const { data: userRoles } = await supabaseClient
+          .from('user_roles')
+          .select('roles(code)')
+          .eq('profile_id', profile.id);
+
+        if (userRoles) {
+          const codes = userRoles.map((ur: any) => {
+            if (ur.roles) {
+              return Array.isArray(ur.roles) ? ur.roles[0]?.code : ur.roles.code;
+            }
+            return null;
+          }).filter(Boolean);
+          if (codes.includes('super_admin') || codes.includes('general_admin')) {
+            setIsAdmin(true);
+          }
+        }
+      } catch (err) {
+        console.error('Error checking role in AdminShell:', err);
+      }
+    }
+    checkRole();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -77,6 +114,15 @@ export default function AdminShell({ children }: AdminShellProps) {
           >
             Archivo Visual
           </Link>
+
+          {isAdmin && (
+            <Link
+              href="/admin/actividad"
+              className="flex items-center px-4 py-2.5 rounded-md text-xs uppercase tracking-wider font-bold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors duration-200"
+            >
+              Actividad
+            </Link>
+          )}
 
           <div className="mt-auto h-px bg-stone-800 my-2" />
 

@@ -1,10 +1,11 @@
 'use server';
 
-import { createAdminMediaAsset, updateAdminMediaAsset } from '../../../lib/admin/admin-media-assets';
+import { createAdminMediaAsset, updateAdminMediaAsset, getAdminMediaAssetById } from '../../../lib/admin/admin-media-assets';
 import { createClient } from '@supabase/supabase-js';
 import { getEnv } from '../../../lib/supabase/env';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { logAdminActivity } from '../../../lib/admin/admin-activity';
 
 export async function createMediaAssetAction(
   assetData: {
@@ -61,6 +62,41 @@ export async function createMediaAssetAction(
 
     if (result.success) {
       revalidatePath('/admin/archivo');
+
+      let createdId: string | null = null;
+      try {
+        const { supabaseUrl, supabaseAnonKey } = getEnv();
+        const cookieStore = await cookies();
+        const token = cookieStore.get('sb-access-token')?.value;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+          auth: { persistSession: false }
+        });
+        const { data } = await supabase
+          .from('media_assets')
+          .select('id')
+          .eq('storage_path', assetData.storage_path)
+          .maybeSingle();
+        if (data) {
+          createdId = data.id;
+        }
+      } catch (err) {
+        console.error('Error fetching created media asset ID for activity log:', err);
+      }
+
+      await logAdminActivity({
+        action_type: 'upload',
+        entity_type: 'media_asset',
+        entity_id: createdId,
+        entity_label: assetData.title,
+        metadata: {
+          original_filename: assetData.original_filename,
+          mime_type: assetData.mime_type,
+          file_size_bytes: assetData.file_size_bytes,
+          status_nuevo: assetData.status,
+          visibility: assetData.visibility,
+        },
+      });
     }
     return result;
   } catch (err: any) {
@@ -99,17 +135,30 @@ export async function updateMediaAssetAction(
       },
     });
 
-    // Check user authentication
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { success: false, error: 'Usuario no autenticado.' };
     }
 
-    // Delegate authorization directly to database RLS policies
+    const prevMediaAsset = await getAdminMediaAssetById(id);
+
     const result = await updateAdminMediaAsset(id, assetData);
 
     if (result.success) {
       revalidatePath('/admin/archivo');
+
+      await logAdminActivity({
+        action_type: 'update',
+        entity_type: 'media_asset',
+        entity_id: id,
+        entity_label: assetData.title,
+        metadata: {
+          status_previo: prevMediaAsset?.status || null,
+          status_nuevo: assetData.status,
+          visibility_previo: prevMediaAsset?.visibility || null,
+          visibility_nuevo: assetData.visibility,
+        },
+      });
     }
     return result;
   } catch (err: any) {

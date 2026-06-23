@@ -47,11 +47,45 @@ export default function NewRecognitionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg(null);
 
+    const cleanTitle = title.trim();
+    if (!cleanTitle) {
+      setErrorMsg('El título es obligatorio y no puede consistir solo de espacios vacíos.');
+      return;
+    }
+    if (cleanTitle.length > 220) {
+      setErrorMsg('El título supera el límite de 220 caracteres.');
+      return;
+    }
+    if (!recognitionType) {
+      setErrorMsg('El tipo de reconocimiento es obligatorio.');
+      return;
+    }
+    if (!recognizedEntityType) {
+      setErrorMsg('La entidad reconocida es obligatoria.');
+      return;
+    }
+    if (recognitionDate) {
+      const d = new Date(recognitionDate);
+      if (isNaN(d.getTime())) {
+        setErrorMsg('La fecha de otorgamiento debe ser una fecha válida.');
+        return;
+      }
+    }
+    if (grantingInstitutionName.trim().length > 220) {
+      setErrorMsg('La institución otorgante supera el límite de 220 caracteres.');
+      return;
+    }
+    if (sourceReference.trim().length > 500) {
+      setErrorMsg('La referencia de la fuente supera el límite de 500 caracteres.');
+      return;
+    }
+
+    setLoading(true);
+
     const newRecognitionData = {
-      title: title.trim(),
+      title: cleanTitle,
       recognition_type: recognitionType,
       recognized_entity_type: recognizedEntityType,
       description: description.trim() || null,

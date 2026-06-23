@@ -88,17 +88,35 @@ export default function EditMediaAssetForm({ asset, contents, institutions }: Ed
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setErrorMsg('El título es requerido.');
+    setErrorMsg(null);
+
+    const cleanTitle = title.trim();
+    if (!cleanTitle) {
+      setErrorMsg('El título es obligatorio y no puede consistir solo de espacios vacíos.');
+      return;
+    }
+    if (cleanTitle.length > 220) {
+      setErrorMsg('El título supera el límite de 220 caracteres.');
+      return;
+    }
+    if (credit.trim().length > 220) {
+      setErrorMsg('El crédito supera el límite de 220 caracteres.');
+      return;
+    }
+    if (altText.trim().length > 300) {
+      setErrorMsg('El texto alternativo supera el límite de 300 caracteres.');
+      return;
+    }
+    if (sourceReference.trim().length > 500) {
+      setErrorMsg('La referencia de la fuente supera el límite de 500 caracteres.');
       return;
     }
 
     setLoading(true);
-    setErrorMsg(null);
 
     try {
       const payload = {
-        title: title.trim(),
+        title: cleanTitle,
         description: description.trim() || null,
         alt_text: altText.trim() || null,
         credit: credit.trim() || null,
@@ -310,6 +328,11 @@ export default function EditMediaAssetForm({ asset, contents, institutions }: Ed
               <span className="text-[10px] text-stone-400 font-mono">
                 Solo los archivos activos deben considerarse disponibles para su uso editorial o público.
               </span>
+              {status === 'active' && (
+                <span className="text-[11px] text-amber-700 bg-amber-50 border-l-2 border-amber-500 px-2 py-1 rounded-sm font-mono mt-1 block">
+                  Solo los archivos activos deben considerarse disponibles para uso editorial o público.
+                </span>
+              )}
             </div>
 
             {/* Alt Text input */}
@@ -326,6 +349,11 @@ export default function EditMediaAssetForm({ asset, contents, institutions }: Ed
                 placeholder="Descripción para lectores de pantalla"
                 className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red transition-all duration-200"
               />
+              {altText.trim() === '' && (isImage || ['cover_image', 'content_image', 'gallery_image', 'historical_photo'].includes(assetType)) && (
+                <span className="text-[11px] text-amber-700 bg-amber-50 border-l-2 border-amber-500 px-2 py-1 rounded-sm font-mono mt-1 block">
+                  Se recomienda incorporar texto alternativo para accesibilidad.
+                </span>
+              )}
             </div>
 
             {/* Content select */}

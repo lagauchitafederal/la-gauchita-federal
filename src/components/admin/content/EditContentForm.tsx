@@ -43,12 +43,31 @@ export default function EditContentForm({ content }: EditContentFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setSuccessMsg(null);
     setErrorMsg(null);
+    setSuccessMsg(null);
+
+    const cleanTitle = title.trim();
+    if (!cleanTitle) {
+      setErrorMsg('El título es obligatorio y no puede consistir solo de espacios vacíos.');
+      return;
+    }
+    if (cleanTitle.length > 180) {
+      setErrorMsg('El título supera el límite de 180 caracteres.');
+      return;
+    }
+    if (subtitle.trim().length > 240) {
+      setErrorMsg('El subtítulo supera el límite de 240 caracteres.');
+      return;
+    }
+    if (summary.trim().length > 1000) {
+      setErrorMsg('El resumen supera el límite de 1.000 caracteres.');
+      return;
+    }
+
+    setLoading(true);
 
     const updatedData = {
-      title,
+      title: cleanTitle,
       subtitle: subtitle.trim() || null,
       summary: summary.trim() || null,
       body: body.trim() || null,
@@ -185,6 +204,11 @@ export default function EditContentForm({ content }: EditContentFormProps) {
             <span className="text-[10px] text-stone-400 font-mono">
               El estado editorial determina si el contenido se encuentra en preparación, revisión o publicación.
             </span>
+            {status === 'published' && (
+              <span className="text-[11px] text-amber-700 bg-amber-50 border-l-2 border-amber-500 px-2 py-1 rounded-sm font-mono mt-1 block">
+                Este contenido quedará disponible según sus reglas de visibilidad.
+              </span>
+            )}
           </div>
 
           {/* Visibility select */}

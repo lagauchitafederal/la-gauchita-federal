@@ -25,11 +25,34 @@ export default function NewContentForm({ contentTypes, categories }: NewContentF
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg(null);
 
+    const cleanTitle = title.trim();
+    if (!cleanTitle) {
+      setErrorMsg('El título es obligatorio y no puede consistir solo de espacios vacíos.');
+      return;
+    }
+    if (cleanTitle.length > 180) {
+      setErrorMsg('El título supera el límite de 180 caracteres.');
+      return;
+    }
+    if (subtitle.trim().length > 240) {
+      setErrorMsg('El subtítulo supera el límite de 240 caracteres.');
+      return;
+    }
+    if (summary.trim().length > 1000) {
+      setErrorMsg('El resumen supera el límite de 1.000 caracteres.');
+      return;
+    }
+    if (!contentTypeId) {
+      setErrorMsg('El tipo de contenido es obligatorio.');
+      return;
+    }
+
+    setLoading(true);
+
     const newContentData = {
-      title: title.trim(),
+      title: cleanTitle,
       subtitle: subtitle.trim() || null,
       summary: summary.trim() || null,
       body: body.trim() || null,

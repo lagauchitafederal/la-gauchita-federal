@@ -52,11 +52,41 @@ export default function EditRecognitionForm({ recognition }: EditRecognitionForm
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg(null);
 
+    const cleanTitle = title.trim();
+    if (!cleanTitle) {
+      setErrorMsg('El título es obligatorio y no puede consistir solo de espacios vacíos.');
+      return;
+    }
+    if (cleanTitle.length > 220) {
+      setErrorMsg('El título supera el límite de 220 caracteres.');
+      return;
+    }
+    if (!recognitionType) {
+      setErrorMsg('El tipo de reconocimiento es obligatorio.');
+      return;
+    }
+    if (recognitionDate) {
+      const d = new Date(recognitionDate);
+      if (isNaN(d.getTime())) {
+        setErrorMsg('La fecha de otorgamiento debe ser una fecha válida.');
+        return;
+      }
+    }
+    if (grantingInstitutionName.trim().length > 220) {
+      setErrorMsg('La institución otorgante supera el límite de 220 caracteres.');
+      return;
+    }
+    if (sourceReference.trim().length > 500) {
+      setErrorMsg('La referencia de la fuente supera el límite de 500 caracteres.');
+      return;
+    }
+
+    setLoading(true);
+
     const updatedData = {
-      title,
+      title: cleanTitle,
       recognition_type: recognitionType,
       description: description.trim() || null,
       granting_institution_name: grantingInstitutionName.trim() || null,
@@ -239,6 +269,11 @@ export default function EditRecognitionForm({ recognition }: EditRecognitionForm
             <span className="text-[10px] text-stone-400 font-mono">
               El estado permite ordenar el proceso de verificación y publicación documental.
             </span>
+            {status === 'active' && (
+              <span className="text-[11px] text-amber-700 bg-amber-50 border-l-2 border-amber-500 px-2 py-1 rounded-sm font-mono mt-1 block">
+                El reconocimiento quedará disponible según sus reglas de visibilidad.
+              </span>
+            )}
           </div>
 
           {/* Description textarea */}
