@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import AdminShell from '../../../../../components/admin/AdminShell';
 import AdminSectionHeader from '../../../../../components/admin/AdminSectionHeader';
 import EditEphemerisForm from '../../../../../components/admin/content/EditEphemerisForm';
+import EditorialRelationsManager from '../../../../../components/admin/content/EditorialRelationsManager';
 import { getAdminEphemerisById } from '../../../../../lib/admin/admin-ephemerides';
 import {
   getCategories,
@@ -10,6 +11,7 @@ import {
   getProvinces,
   getMunicipalities
 } from '../../../../../lib/catalogs/catalogs';
+import { getEditorialRelationsForEntity } from '../../../../../lib/admin/admin-editorial-relations';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -27,9 +29,10 @@ export default async function EditEphemerisPage({ params }: EditPageProps) {
   const { id } = await params;
   
   let ephemeris = null;
+  let relations: any[] = [];
   let isError = false;
 
-  // Load catalogs and ephemeris details
+  // Load catalogs
   const [categories, regions, provinces, municipalities] = await Promise.all([
     getCategories(),
     getRegions(),
@@ -38,7 +41,12 @@ export default async function EditEphemerisPage({ params }: EditPageProps) {
   ]);
 
   try {
-    ephemeris = await getAdminEphemerisById(id);
+    const [ephemerisData, relationsData] = await Promise.all([
+      getAdminEphemerisById(id),
+      getEditorialRelationsForEntity('content', id)
+    ]);
+    ephemeris = ephemerisData;
+    relations = relationsData;
   } catch (error) {
     console.error('Error loading admin ephemeris detail:', error);
     isError = true;
@@ -79,13 +87,20 @@ export default async function EditEphemerisPage({ params }: EditPageProps) {
           </Link>
         </div>
       ) : (
-        <EditEphemerisForm
-          ephemeris={ephemeris}
-          categories={categories}
-          regions={regions}
-          provinces={provinces}
-          municipalities={municipalities}
-        />
+        <div className="flex flex-col gap-8">
+          <EditEphemerisForm
+            ephemeris={ephemeris}
+            categories={categories}
+            regions={regions}
+            provinces={provinces}
+            municipalities={municipalities}
+          />
+          <EditorialRelationsManager
+            entityType="content"
+            entityId={id}
+            initialRelations={relations}
+          />
+        </div>
       )}
     </AdminShell>
   );

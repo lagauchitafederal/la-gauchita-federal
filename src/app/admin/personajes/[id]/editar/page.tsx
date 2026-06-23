@@ -4,9 +4,11 @@ import Link from 'next/link';
 import AdminShell from '../../../../../components/admin/AdminShell';
 import AdminSectionHeader from '../../../../../components/admin/AdminSectionHeader';
 import EditPersonForm from '../../../../../components/admin/content/EditPersonForm';
+import EditorialRelationsManager from '../../../../../components/admin/content/EditorialRelationsManager';
 import { getRegions, getProvinces, getMunicipalities } from '../../../../../lib/catalogs/catalogs';
 import { getAdminMediaAssetsList } from '../../../../../lib/admin/admin-media-assets';
 import { getAdminPersonById } from '../../../../../lib/admin/admin-people';
+import { getEditorialRelationsForEntity } from '../../../../../lib/admin/admin-editorial-relations';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,12 +24,13 @@ interface EditPersonPageProps {
 export default async function EditPersonPage({ params }: EditPersonPageProps) {
   const { id } = await params;
 
-  const [person, regions, provinces, municipalities, mediaAssets] = await Promise.all([
+  const [person, regions, provinces, municipalities, mediaAssets, relations] = await Promise.all([
     getAdminPersonById(id),
     getRegions(),
     getProvinces(),
     getMunicipalities(),
-    getAdminMediaAssetsList()
+    getAdminMediaAssetsList(),
+    getEditorialRelationsForEntity('person', id)
   ]);
 
   if (!person) {
@@ -63,13 +66,22 @@ export default async function EditPersonPage({ params }: EditPersonPageProps) {
         description="Editá la información, biografía, territorio y visibilidad del perfil."
         inPreparation={false}
       />
-      <EditPersonForm
-        person={person}
-        regions={regions}
-        provinces={provinces}
-        municipalities={municipalities}
-        mediaAssets={mappedMedia}
-      />
+      
+      <div className="flex flex-col gap-8">
+        <EditPersonForm
+          person={person}
+          regions={regions}
+          provinces={provinces}
+          municipalities={municipalities}
+          mediaAssets={mappedMedia}
+        />
+
+        <EditorialRelationsManager
+          entityType="person"
+          entityId={id}
+          initialRelations={relations}
+        />
+      </div>
     </AdminShell>
   );
 }
