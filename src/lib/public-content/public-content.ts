@@ -1,5 +1,7 @@
 import { createServerSupabaseClient } from '../supabase/server';
 
+import { SelectedTerritory, sortPublicContentByRelevance, sortPublicInstitutionsByRelevance } from './relevance';
+
 export interface PublicContent {
   title: string;
   slug: string;
@@ -11,6 +13,9 @@ export interface PublicContent {
   created_at: string;
   institutions?: { name: string; slug: string } | null;
   categories?: { name: string } | null;
+  region_id?: string | null;
+  province_id?: string | null;
+  municipality_id?: string | null;
 }
 
 export interface PublicContentDetail extends PublicContent {
@@ -26,6 +31,9 @@ export interface PublicInstitution {
   is_featured: boolean;
   sort_order: number;
   address?: string | null;
+  region_id?: string | null;
+  province_id?: string | null;
+  municipality_id?: string | null;
 }
 
 export interface PublicInstitutionDetail extends PublicInstitution {
@@ -76,24 +84,27 @@ export interface PublicMediaAssetDetail extends PublicMediaAsset {
 
 
 /**
- * Fetches published contents for homepage (limit 6). RLS filters published, public and active contents.
+ * Fetches published contents for homepage. RLS filters published, public and active contents.
  */
-export async function getPublishedContents(): Promise<PublicContent[]> {
+export async function getPublishedContents(territory?: SelectedTerritory): Promise<PublicContent[]> {
   try {
     const supabase = createServerSupabaseClient();
-    const { data, error } = await supabase
+    let dbQuery = supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, institutions(name, slug), categories(name)')
+      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name)')
       .order('is_featured', { ascending: false })
-      .order('publish_date', { ascending: false })
-      .limit(6);
+      .order('publish_date', { ascending: false });
+
+    // Fetch more records if territory filter is applied to allow proper memory sorting
+    const limitVal = territory ? 100 : 6;
+    const { data, error } = await dbQuery.limit(limitVal);
 
     if (error) {
       console.error('Error fetching published contents:', error);
       return [];
     }
     
-    return (data || []).map((item: any) => ({
+    let mapped = (data || []).map((item: any) => ({
       title: item.title,
       slug: item.slug,
       subtitle: item.subtitle,
@@ -102,9 +113,19 @@ export async function getPublishedContents(): Promise<PublicContent[]> {
       publish_date: item.publish_date,
       is_featured: item.is_featured,
       created_at: item.created_at,
+      region_id: item.region_id,
+      province_id: item.province_id,
+      municipality_id: item.municipality_id,
       institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
       categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null
     })) as PublicContent[];
+
+    if (territory) {
+      mapped = sortPublicContentByRelevance(mapped, territory);
+      mapped = mapped.slice(0, 6);
+    }
+
+    return mapped;
   } catch (err) {
     console.error('Unexpected error fetching published contents:', err);
     return [];
@@ -112,14 +133,14 @@ export async function getPublishedContents(): Promise<PublicContent[]> {
 }
 
 /**
- * Fetches the full list of published contents (limit 100). RLS filters published, public and active contents.
+ * Fetches the full list of published contents. RLS filters published, public and active contents.
  */
-export async function getPublishedContentsList(): Promise<PublicContent[]> {
+export async function getPublishedContentsList(territory?: SelectedTerritory): Promise<PublicContent[]> {
   try {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, institutions(name, slug), categories(name)')
+      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name)')
       .order('is_featured', { ascending: false })
       .order('publish_date', { ascending: false })
       .limit(100);
@@ -129,7 +150,7 @@ export async function getPublishedContentsList(): Promise<PublicContent[]> {
       return [];
     }
 
-    return (data || []).map((item: any) => ({
+    let mapped = (data || []).map((item: any) => ({
       title: item.title,
       slug: item.slug,
       subtitle: item.subtitle,
@@ -138,9 +159,18 @@ export async function getPublishedContentsList(): Promise<PublicContent[]> {
       publish_date: item.publish_date,
       is_featured: item.is_featured,
       created_at: item.created_at,
+      region_id: item.region_id,
+      province_id: item.province_id,
+      municipality_id: item.municipality_id,
       institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
       categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null
     })) as PublicContent[];
+
+    if (territory) {
+      mapped = sortPublicContentByRelevance(mapped, territory);
+    }
+
+    return mapped;
   } catch (err) {
     console.error('Unexpected error fetching published contents list:', err);
     return [];
@@ -156,7 +186,7 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, body, event_date, publish_date, is_featured, source_reference, created_at, institutions(name, slug), categories(name)')
+      .select('title, slug, subtitle, summary, body, event_date, publish_date, is_featured, source_reference, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name)')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -178,6 +208,9 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
       is_featured: item.is_featured,
       source_reference: item.source_reference,
       created_at: item.created_at,
+      region_id: item.region_id,
+      province_id: item.province_id,
+      municipality_id: item.municipality_id,
       institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
       categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null
     } as PublicContentDetail;
@@ -188,24 +221,34 @@ export async function getPublishedContentBySlug(slug: string): Promise<PublicCon
 }
 
 /**
- * Fetches active institutions for homepage (limit 8). RLS filters active institutions.
+ * Fetches active institutions for homepage. RLS filters active institutions.
  */
-export async function getActiveInstitutions(): Promise<PublicInstitution[]> {
+export async function getActiveInstitutions(territory?: SelectedTerritory): Promise<PublicInstitution[]> {
   try {
     const supabase = createServerSupabaseClient();
-    const { data, error } = await supabase
+    let dbQuery = supabase
       .from('institutions')
-      .select('name, slug, institution_type, description, is_featured, sort_order, address')
+      .select('name, slug, institution_type, description, is_featured, sort_order, address, region_id, province_id, municipality_id')
       .order('is_featured', { ascending: false })
       .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
-      .limit(8);
+      .order('name', { ascending: true });
+
+    const limitVal = territory ? 100 : 8;
+    const { data, error } = await dbQuery.limit(limitVal);
 
     if (error) {
       console.error('Error fetching active institutions:', error);
       return [];
     }
-    return (data as PublicInstitution[]) || [];
+
+    let mapped = (data as PublicInstitution[]) || [];
+
+    if (territory) {
+      mapped = sortPublicInstitutionsByRelevance(mapped, territory);
+      mapped = mapped.slice(0, 8);
+    }
+
+    return mapped;
   } catch (err) {
     console.error('Unexpected error fetching active institutions:', err);
     return [];
@@ -215,12 +258,12 @@ export async function getActiveInstitutions(): Promise<PublicInstitution[]> {
 /**
  * Fetches the full list of active institutions (limit 100). RLS filters active institutions.
  */
-export async function getActiveInstitutionsList(): Promise<PublicInstitution[]> {
+export async function getActiveInstitutionsList(territory?: SelectedTerritory): Promise<PublicInstitution[]> {
   try {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('institutions')
-      .select('name, slug, institution_type, description, is_featured, sort_order, address')
+      .select('name, slug, institution_type, description, is_featured, sort_order, address, region_id, province_id, municipality_id')
       .order('is_featured', { ascending: false })
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true })
@@ -230,7 +273,14 @@ export async function getActiveInstitutionsList(): Promise<PublicInstitution[]> 
       console.error('Error fetching active institutions list:', error);
       return [];
     }
-    return (data as PublicInstitution[]) || [];
+
+    let mapped = (data as PublicInstitution[]) || [];
+
+    if (territory) {
+      mapped = sortPublicInstitutionsByRelevance(mapped, territory);
+    }
+
+    return mapped;
   } catch (err) {
     console.error('Unexpected error fetching active institutions list:', err);
     return [];

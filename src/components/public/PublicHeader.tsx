@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import TerritorySelector from './TerritorySelector';
+import { parseTerritoryCookie } from '../../lib/utils/territory';
 
 const publicLinks = [
   { href: '/', label: 'Inicio' },
@@ -9,7 +12,11 @@ const publicLinks = [
   { href: '/acerca', label: 'Acerca' },
 ];
 
-export default function PublicHeader() {
+export default async function PublicHeader() {
+  const cookieStore = await cookies();
+  const rawCookie = cookieStore.get('lgf_territory')?.value;
+  const currentTerritory = parseTerritoryCookie(rawCookie);
+
   return (
     <header className="w-full flex flex-col pt-4 pb-2 border-b border-stone-beige/80">
       {/* Editorial Header Brand Name */}
@@ -20,9 +27,14 @@ export default function PublicHeader() {
         >
           LA GAUCHITA FEDERAL
         </Link>
-        <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-stone-500 font-bold italic">
+        <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-stone-500 font-bold italic mb-2">
           Donde late la historia de cada argentino
         </p>
+
+        {/* Public Territory Selector */}
+        <div className="mt-1">
+          <TerritorySelector currentTerritory={currentTerritory} />
+        </div>
       </div>
 
       {/* Editorial Menu Navigation */}
@@ -44,4 +56,4 @@ export default function PublicHeader() {
       </nav>
     </header>
   );
-}
+}

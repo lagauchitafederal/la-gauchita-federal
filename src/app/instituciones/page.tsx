@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { parseTerritoryCookie } from '../../lib/utils/territory';
 import { getActiveInstitutionsList } from '../../lib/public-content/public-content';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
@@ -11,7 +13,12 @@ export const metadata: Metadata = {
 };
 
 export default async function InstitucionesPage() {
-  const institutions = await getActiveInstitutionsList();
+  const cookieStore = await cookies();
+  const rawCookie = cookieStore.get('lgf_territory')?.value;
+  const territory = parseTerritoryCookie(rawCookie);
+
+  const institutions = await getActiveInstitutionsList(territory);
+
 
   return (
     <PublicPageShell>

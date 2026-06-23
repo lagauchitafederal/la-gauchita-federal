@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { parseTerritoryCookie } from '../../lib/utils/territory';
 import { getPublishedContentsList } from '../../lib/public-content/public-content';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
@@ -10,7 +12,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ContenidosPage() {
-  const contents = await getPublishedContentsList();
+  const cookieStore = await cookies();
+  const rawCookie = cookieStore.get('lgf_territory')?.value;
+  const territory = parseTerritoryCookie(rawCookie);
+
+  const contents = await getPublishedContentsList(territory);
+
 
   return (
     <PublicPageShell>

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { parseTerritoryCookie } from '../lib/utils/territory';
 import {
   getRegions,
   getProvinces,
@@ -24,6 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
+  const cookieStore = await cookies();
+  const rawCookie = cookieStore.get('lgf_territory')?.value;
+  const territory = parseTerritoryCookie(rawCookie);
+
   const [
     regions,
     provinces,
@@ -42,11 +48,12 @@ export default async function Home() {
     getContentTypes(),
     getCategories(),
     getMembershipLevels(),
-    getPublishedContents(),
-    getActiveInstitutions(),
+    getPublishedContents(territory),
+    getActiveInstitutions(territory),
     getActiveRecognitions(),
     getPublicMediaAssets()
   ]);
+
 
   return (
     <PublicPageShell maxWidth="max-w-4xl">
