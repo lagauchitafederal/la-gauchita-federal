@@ -14,16 +14,41 @@ import {
   getPublishedContents,
   getActiveInstitutions,
   getActiveRecognitions,
-  getPublicMediaAssets
+  getPublicMediaAssets,
+  getTodayEphemerides
 } from '../lib/public-content/public-content';
 import PublicPageShell from '../components/public/PublicPageShell';
 import { formatInstitutionType, formatAssetType } from '../lib/utils/formatters';
 import { getPublicMediaUrl } from '../lib/utils/media-url';
+import { getEphemerisLabel, formatHistoricalDate } from '../lib/utils/date';
 
 export const metadata: Metadata = {
   title: 'La Gauchita Federal',
   description: 'Donde late la historia de cada argentino. Conectando regiones, provincias y municipios.',
 };
+
+function getContentTerritoryLabel(
+  item: { region_id?: string | null; province_id?: string | null; municipality_id?: string | null },
+  regions: any[],
+  provinces: any[],
+  municipalities: any[]
+): string | null {
+  if (item.municipality_id) {
+    const mun = municipalities.find(m => m.id === item.municipality_id);
+    const prov = provinces.find(p => p.id === item.province_id);
+    if (mun && prov) return `${mun.name}, ${prov.name}`;
+    if (mun) return mun.name;
+  }
+  if (item.province_id) {
+    const prov = provinces.find(p => p.id === item.province_id);
+    if (prov) return prov.name;
+  }
+  if (item.region_id) {
+    const reg = regions.find(r => r.id === item.region_id);
+    if (reg) return reg.name;
+  }
+  return null;
+}
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -40,7 +65,8 @@ export default async function Home() {
     contents,
     institutions,
     recognitions,
-    mediaAssets
+    mediaAssets,
+    todayEphemerides
   ] = await Promise.all([
     getRegions(),
     getProvinces(),
@@ -51,8 +77,10 @@ export default async function Home() {
     getPublishedContents(territory),
     getActiveInstitutions(territory),
     getActiveRecognitions(),
-    getPublicMediaAssets()
+    getPublicMediaAssets(),
+    getTodayEphemerides(territory)
   ]);
+
 
 
   return (
@@ -116,6 +144,121 @@ export default async function Home() {
           </div>
         </div>
       </header>
+
+      {/* Bloque: Un día como hoy */}
+      <section className="bg-[#fdfbf7] border border-muted-amber/60 rounded-lg p-6 sm:p-8 flex flex-col gap-6 shadow-sm">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-beige/80">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-earth-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-earth-red">
+              Un día como hoy
+            </h2>
+          </div>
+          <span className="text-[10px] text-stone-500 font-bold uppercase tracking-wider font-mono">
+            Efemérides e historia
+          </span>
+        </div>
+
+        {todayEphemerides.length > 0 ? (
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Principal Ephemeris */}
+            <div className="flex-1 flex flex-col gap-3.5">
+              {(() => {
+                const mainItem = todayEphemerides[0];
+                const label = getEphemerisLabel(mainItem.event_date);
+                const histDate = formatHistoricalDate(mainItem.event_date);
+                const territoryLabel = getContentTerritoryLabel(mainItem, regions, provinces, municipalities);
+
+                return (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-bold text-earth-red uppercase tracking-wide bg-earth-red/5 px-2.5 py-0.5 rounded border border-earth-red/10">
+                        {label}
+                      </span>
+                      {territoryLabel && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/60 uppercase tracking-wide">
+                          <svg className="w-3 h-3 text-earth-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {territoryLabel}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-serif font-black text-2xl text-charcoal hover:text-earth-red transition-colors duration-200 leading-snug">
+                      <Link href={`/contenidos/${mainItem.slug}`}>
+                        {mainItem.title}
+                      </Link>
+                    </h3>
+                    <p className="text-xs font-semibold text-stone-500 italic font-mono uppercase tracking-wider">
+                      {histDate}
+                    </p>
+                    {mainItem.summary && (
+                      <p className="text-sm text-stone-700 leading-relaxed">
+                        {mainItem.summary}
+                      </p>
+                    )}
+                    <Link
+                      href={`/contenidos/${mainItem.slug}`}
+                      className="inline-flex items-center text-xs font-bold text-earth-red hover:underline mt-2 uppercase tracking-wider font-mono"
+                    >
+                      Leer historia completa &rarr;
+                    </Link>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* Secondary Ephemerides */}
+            {todayEphemerides.length > 1 && (
+              <div className="w-full md:w-72 shrink-0 flex flex-col gap-4 border-t md:border-t-0 md:border-l border-stone-beige/80 pt-6 md:pt-0 md:pl-6">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
+                  Otras efemérides de hoy
+                </h4>
+                <div className="flex flex-col gap-4">
+                  {todayEphemerides.slice(1, 4).map((item) => {
+                    const label = getEphemerisLabel(item.event_date);
+                    const histDate = formatHistoricalDate(item.event_date);
+                    const territoryLabel = getContentTerritoryLabel(item, regions, provinces, municipalities);
+
+                    return (
+                      <div key={item.slug} className="flex flex-col gap-1.5 group">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider">
+                            {histDate}
+                          </span>
+                          {territoryLabel && (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-earth-red bg-earth-red/5 px-1.5 py-0.5 rounded border border-earth-red/10 uppercase tracking-wide">
+                              <svg className="w-2.5 h-2.5 text-earth-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              {territoryLabel}
+                            </span>
+                          )}
+                        </div>
+                        <h5 className="font-serif font-bold text-sm text-charcoal group-hover:text-earth-red transition-colors duration-200 leading-snug">
+                          <Link href={`/contenidos/${item.slug}`}>
+                            {item.title}
+                          </Link>
+                        </h5>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-6 flex flex-col items-center gap-2">
+            <p className="text-stone-500 text-sm italic font-medium">
+              Estamos preparando nuevos contenidos para esta fecha.
+            </p>
+          </div>
+        )}
+      </section>
 
       {/* 2. Franja de accesos rápidos */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">

@@ -1,4 +1,6 @@
 import { createServerSupabaseClient } from '../supabase/server';
+import { isEventToday } from '../utils/date';
+import { getRelevanceScore } from './relevance';
 
 import { SelectedTerritory, sortPublicContentByRelevance, sortPublicInstitutionsByRelevance } from './relevance';
 
@@ -16,7 +18,9 @@ export interface PublicContent {
   region_id?: string | null;
   province_id?: string | null;
   municipality_id?: string | null;
+  content_types?: { code: string; name: string; slug: string } | null;
 }
+
 
 export interface PublicContentDetail extends PublicContent {
   body: string | null;
@@ -432,4 +436,88 @@ export async function getPublicMediaAssetsList(): Promise<PublicMediaAssetDetail
     return [];
   }
 }
+
+/**
+ * Fetches contents matching today's day and month, ordered by type (ephemeris first), relevance score, featured status, and publish date.
+ */
+export async function getTodayEphemerides(territory?: SelectedTerritory): Promise<PublicContent[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('contents')
+      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
+      .eq('status', 'published')
+      .eq('visibility', 'public')
+      .not('event_date', 'is', null)
+      .order('is_featured', { ascending: false })
+      .order('publish_date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching today ephemerides:', error);
+      return [];
+    }
+
+    // Filter in-memory for matching day and month (Argentina timezone)
+    let filtered = (data || []).filter((item: any) => {
+      // Don't show future publish dates
+      if (item.publish_date && new Date(item.publish_date) > new Date()) {
+        return false;
+      }
+      return isEventToday(item.event_date);
+    });
+
+    // Map the results to matching type
+    let mapped = filtered.map((item: any) => ({
+      title: item.title,
+      slug: item.slug,
+      subtitle: item.subtitle,
+      summary: item.summary,
+      event_date: item.event_date,
+      publish_date: item.publish_date,
+      is_featured: item.is_featured,
+      created_at: item.created_at,
+      region_id: item.region_id,
+      province_id: item.province_id,
+      municipality_id: item.municipality_id,
+      institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
+      categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null,
+      content_types: Array.isArray(item.content_types) ? item.content_types[0] || null : item.content_types || null
+    })) as PublicContent[];
+
+    // Sort by:
+    // 1. Is ephemeris (content_types.code === 'ephemeris') -> descending
+    // 2. Relevance score (if territory context exists) -> descending
+    // 3. Featured status -> descending
+    // 4. Publish date -> descending
+    mapped.sort((a, b) => {
+      const isEphemerisA = a.content_types?.code === 'ephemeris' ? 1 : 0;
+      const isEphemerisB = b.content_types?.code === 'ephemeris' ? 1 : 0;
+      if (isEphemerisA !== isEphemerisB) {
+        return isEphemerisB - isEphemerisA;
+      }
+
+      if (territory) {
+        const scoreA = getRelevanceScore(a, territory);
+        const scoreB = getRelevanceScore(b, territory);
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+      }
+
+      if (a.is_featured !== b.is_featured) {
+        return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
+      }
+
+      const dateA = a.publish_date ? new Date(a.publish_date).getTime() : 0;
+      const dateB = b.publish_date ? new Date(b.publish_date).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return mapped;
+  } catch (err) {
+    console.error('Unexpected error fetching today ephemerides:', err);
+    return [];
+  }
+}
+
 
