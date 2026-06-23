@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getPublishedContentBySlug } from '../../../lib/public-content/public-content';
 import PublicPageShell from '../../../components/public/PublicPageShell';
 import type { Metadata } from 'next';
+import { formatHistoricalDate, parseEventDate, getCurrentArgentinaDate } from '../../../lib/utils/date';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -80,9 +81,23 @@ export default async function ContentDetailPage({ params }: PageProps) {
               <span>Publicado: {new Date(content.publish_date).toLocaleDateString()}</span>
             )}
             {content.event_date && (
-              <span>Hito Histórico: {new Date(content.event_date).toLocaleDateString()}</span>
+              <span>
+                {"Hito Hist\u00f3rico"}: {formatHistoricalDate(content.event_date)}
+                {(() => {
+                  const { year } = parseEventDate(content.event_date);
+                  if (year && !isNaN(year)) {
+                    const currentYear = getCurrentArgentinaDate().getFullYear();
+                    const yearsElapsed = currentYear - year;
+                    if (yearsElapsed > 0) {
+                      return ` (Hace ${yearsElapsed} a\u00f1os)`;
+                    }
+                  }
+                  return '';
+                })()}
+              </span>
             )}
           </div>
+
 
           {/* Summary (if exists, styled as callout/lead paragraph) */}
           {content.summary && (
