@@ -17,9 +17,8 @@ export default function RecoverPasswordForm() {
     setSuccess(false);
 
     try {
-      const redirectTo = window.location.origin + '/restablecer-contrasena';
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo,
+        redirectTo: `${window.location.origin}/restablecer-contrasena`,
       });
 
       if (error) {
