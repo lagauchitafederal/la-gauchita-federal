@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getActiveInstitutionBySlug } from '../../../lib/public-content/public-content';
+import { getPublicEditorialRelations } from '../../../lib/public-content/public-editorial-relations';
+import PublicEditorialRelations from '../../../components/public/PublicEditorialRelations';
 import PublicPageShell from '../../../components/public/PublicPageShell';
 import type { Metadata } from 'next';
 import { formatInstitutionType } from '../../../lib/utils/formatters';
@@ -32,6 +34,9 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
   if (!inst) {
     notFound();
   }
+
+  // Fetch related editorial relations if the institution has an ID
+  const relations = inst.id ? await getPublicEditorialRelations('institution', inst.id) : [];
 
   return (
     <PublicPageShell>
@@ -115,6 +120,13 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
               )}
             </dl>
           </div>
+
+          {/* Editorial Relations */}
+          {relations.length > 0 && (
+            <div className="border-t border-stone-beige/50 pt-8 mt-4">
+              <PublicEditorialRelations relations={relations} />
+            </div>
+          )}
 
       </div>
     </PublicPageShell>

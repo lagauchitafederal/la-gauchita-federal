@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
+import { getPublishedPersonBySlug } from '../../lib/public-content/public-people';
 
 export const metadata: Metadata = {
   title: "Acerca de nosotros",
   description: "Una plataforma cultural para preservar, organizar y difundir la memoria histórica y el patrimonio federal argentino.",
 };
 
-export default function AcercaPage() {
+export default async function AcercaPage() {
+  const eduardoCeballosExists = await getPublishedPersonBySlug('eduardo-ceballos').then(p => !!p);
+
   return (
     <PublicPageShell>
       <PublicSectionHeader
@@ -59,37 +63,76 @@ export default function AcercaPage() {
         {/* Separador de Sección */}
         <div className="pt-4 pb-2 border-b border-stone-beige/60">
           <h3 className="text-sm uppercase tracking-[0.2em] font-bold text-stone-500">
-            Pilares e Impulsores
+            Los pilares de La Gauchita Federal
           </h3>
         </div>
 
         {/* Grid de Impulsores */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
-            <h4 className="font-serif font-bold text-charcoal text-base">
-              Instituto Cultural Andino
-            </h4>
-            <p className="text-xs text-stone-700 leading-relaxed">
-              Pilar fundamental en la investigación y promoción de las tradiciones, el folklore y el patrimonio cultural del norte argentino. Colabora activamente en la difusión de materiales y documentos valiosos para docentes, investigadores y estudiantes.
-            </p>
+          {/* Instituto Cultural Andino */}
+          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col justify-between hover:border-muted-amber hover:shadow-md transition-all duration-300">
+            <div className="flex flex-col gap-3">
+              <h4 className="font-serif font-bold text-charcoal text-base">
+                Instituto Cultural Andino
+              </h4>
+              <p className="text-xs text-stone-700 leading-relaxed">
+                Pilar fundamental en la investigación y promoción de las tradiciones, el folklore y el patrimonio cultural del norte argentino. Colabora activamente en la difusión de materiales y documentos valiosos para docentes, investigadores y estudiantes.
+              </p>
+            </div>
+            <div className="mt-4">
+              <Link 
+                href="/instituciones/instituto-cultural-andino" 
+                className="text-earth-red hover:underline text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1"
+              >
+                Ver institución &rarr;
+              </Link>
+            </div>
           </section>
 
-          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
-            <h4 className="font-serif font-bold text-charcoal text-base">
-              Revista La Gauchita
-            </h4>
-            <p className="text-xs text-stone-700 leading-relaxed">
-              Con una larga trayectoria en la comunicación cultural, ha sido un medio clave para registrar testimonios, crónicas, efemérides y expresiones artísticas. Este portal representa su evolución digital y federal.
-            </p>
+          {/* Revista La Gauchita */}
+          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col justify-between hover:border-muted-amber hover:shadow-md transition-all duration-300">
+            <div className="flex flex-col gap-3">
+              <h4 className="font-serif font-bold text-charcoal text-base">
+                Revista La Gauchita
+              </h4>
+              <p className="text-xs text-stone-700 leading-relaxed">
+                Con una larga trayectoria en la comunicación cultural, ha sido un medio clave para registrar testimonios, crónicas, efemérides y expresiones artísticas. Este portal representa su evolución digital y federal.
+              </p>
+            </div>
+            <div className="mt-4">
+              <Link 
+                href="/instituciones/revista-la-gauchita" 
+                className="text-earth-red hover:underline text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1"
+              >
+                Explorar revista &rarr;
+              </Link>
+            </div>
           </section>
 
-          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col gap-3 hover:border-muted-amber transition-colors duration-200">
-            <h4 className="font-serif font-bold text-charcoal text-base">
-              Eduardo Ceballos
-            </h4>
-            <p className="text-xs text-stone-700 leading-relaxed">
-              Escritor, periodista y promotor cultural, ha dedicado su labor al rescate y resguardo de la identidad federal. Sus valiosas recopilaciones históricas forman parte del núcleo de conocimiento de este portal.
-            </p>
+          {/* Eduardo Ceballos */}
+          <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col justify-between hover:border-muted-amber hover:shadow-md transition-all duration-300">
+            <div className="flex flex-col gap-3">
+              <h4 className="font-serif font-bold text-charcoal text-base">
+                Eduardo Ceballos
+              </h4>
+              <p className="text-xs text-stone-700 leading-relaxed">
+                Escritor, periodista y promotor cultural, ha dedicado su labor al rescate y resguardo de la identidad federal. Sus valiosas recopilaciones históricas forman parte del núcleo de conocimiento de este portal.
+              </p>
+            </div>
+            <div className="mt-4">
+              {eduardoCeballosExists ? (
+                <Link 
+                  href="/personajes/eduardo-ceballos" 
+                  className="text-earth-red hover:underline text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1"
+                >
+                  Ver perfil &rarr;
+                </Link>
+              ) : (
+                <span className="text-stone-400 text-xs font-mono font-bold uppercase tracking-wider block">
+                  Próximamente
+                </span>
+              )}
+            </div>
           </section>
         </div>
 

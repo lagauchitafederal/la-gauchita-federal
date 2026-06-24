@@ -16,7 +16,7 @@ export interface PublicRelationDetail {
  * Prevents N+1 queries by batch loading details and enforces RLS/public visibility filters.
  */
 export async function getPublicEditorialRelations(
-  entityType: 'person' | 'content',
+  entityType: 'person' | 'content' | 'institution' | 'recognition',
   entityId: string
 ): Promise<PublicRelationDetail[]> {
   try {

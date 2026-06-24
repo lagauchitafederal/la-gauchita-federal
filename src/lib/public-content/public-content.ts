@@ -30,6 +30,7 @@ export interface PublicContentDetail extends PublicContent {
 }
 
 export interface PublicInstitution {
+  id?: string;
   name: string;
   slug: string;
   institution_type: string;
@@ -51,6 +52,7 @@ export interface PublicInstitutionDetail extends PublicInstitution {
 }
 
 export interface PublicRecognition {
+  id?: string;
   title: string;
   slug: string;
   recognition_type: string;
@@ -239,7 +241,7 @@ export async function getActiveInstitutions(territory?: SelectedTerritory): Prom
     const supabase = createServerSupabaseClient();
     let dbQuery = supabase
       .from('institutions')
-      .select('name, slug, institution_type, description, is_featured, sort_order, address, region_id, province_id, municipality_id')
+      .select('id, name, slug, institution_type, description, is_featured, sort_order, address, region_id, province_id, municipality_id')
       .order('is_featured', { ascending: false })
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true });
@@ -274,7 +276,7 @@ export async function getActiveInstitutionsList(territory?: SelectedTerritory): 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('institutions')
-      .select('name, slug, institution_type, description, is_featured, sort_order, address, region_id, province_id, municipality_id')
+      .select('id, name, slug, institution_type, description, is_featured, sort_order, address, region_id, province_id, municipality_id')
       .order('is_featured', { ascending: false })
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true })
@@ -307,7 +309,7 @@ export async function getActiveInstitutionBySlug(slug: string): Promise<PublicIn
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('institutions')
-      .select('name, slug, institution_type, description, is_featured, sort_order, website_url, logo_url, address, contact_email, contact_phone')
+      .select('id, name, slug, institution_type, description, is_featured, sort_order, website_url, logo_url, address, contact_email, contact_phone')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -330,7 +332,7 @@ export async function getActiveRecognitions(): Promise<PublicRecognition[]> {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('recognitions')
-      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name')
+      .select('id, title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name')
       .order('is_featured', { ascending: false })
       .order('recognition_date', { ascending: false })
       .order('sort_order', { ascending: true })
@@ -355,7 +357,7 @@ export async function getActiveRecognitionsList(): Promise<PublicRecognition[]> 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('recognitions')
-      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name')
+      .select('id, title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name')
       .order('is_featured', { ascending: false })
       .order('recognition_date', { ascending: false })
       .order('sort_order', { ascending: true })
@@ -381,7 +383,7 @@ export async function getActiveRecognitionBySlug(slug: string): Promise<PublicRe
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('recognitions')
-      .select('title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name, location, document_reference, source_reference')
+      .select('id, title, slug, recognition_type, description, recognition_date, is_featured, sort_order, granting_institution_name, location, document_reference, source_reference')
       .eq('slug', slug)
       .maybeSingle();
 
