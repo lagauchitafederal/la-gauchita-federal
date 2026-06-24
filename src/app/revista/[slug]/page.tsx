@@ -8,6 +8,7 @@ import PublicPageShell from '../../../components/public/PublicPageShell';
 import { getPublicEditorialRelations } from '../../../lib/public-content/public-editorial-relations';
 import PublicEditorialRelations from '../../../components/public/PublicEditorialRelations';
 import { createServerSupabaseClient } from '../../../lib/supabase/server';
+import { getMagazineJsonLd } from '../../../lib/seo/json-ld';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,8 +106,18 @@ export default async function MagazineDetailPage({ params }: MagazineDetailPageP
     ? getPublicMediaUrl(edition.pdf_media_assets.bucket_name, edition.pdf_media_assets.storage_path)
     : null;
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const magazineJsonLds = getMagazineJsonLd(siteUrl, edition, coverUrl);
+
   return (
     <PublicPageShell maxWidth="max-w-4xl">
+      {magazineJsonLds.map((jsonLd, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       <div className="flex flex-col gap-8">
         
         {/* Back navigation */}

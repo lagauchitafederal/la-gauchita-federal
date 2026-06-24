@@ -3,6 +3,7 @@ import Link from 'next/link';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import PublicSectionHeader from '../../components/public/PublicSectionHeader';
 import { getPublishedPersonBySlug } from '../../lib/public-content/public-people';
+import { getAcercaJsonLd } from '../../lib/seo/json-ld';
 
 export const metadata: Metadata = {
   title: "Acerca de nosotros",
@@ -11,9 +12,18 @@ export const metadata: Metadata = {
 
 export default async function AcercaPage() {
   const eduardoCeballosExists = await getPublishedPersonBySlug('eduardo-ceballos').then(p => !!p);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const acercaJsonLds = getAcercaJsonLd(siteUrl);
 
   return (
     <PublicPageShell>
+      {acercaJsonLds.map((jsonLd, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       <PublicSectionHeader
         title="Acerca de La Gauchita Federal"
         description="Una plataforma cultural para preservar, organizar y difundir la memoria histórica y el patrimonio federal argentino."

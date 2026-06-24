@@ -8,6 +8,7 @@ import { getPublicMediaUrl } from '../../../lib/utils/media-url';
 import PublicPageShell from '../../../components/public/PublicPageShell';
 import { getPublicEditorialRelations } from '../../../lib/public-content/public-editorial-relations';
 import PublicEditorialRelations from '../../../components/public/PublicEditorialRelations';
+import { getPersonJsonLd } from '../../../lib/seo/json-ld';
 
 export const dynamic = 'force-dynamic';
 
@@ -156,8 +157,18 @@ export default async function PersonajeDetailPage({ params }: PersonajeDetailPag
     return 'Ámbito Nacional';
   };
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const personJsonLds = getPersonJsonLd(siteUrl, person, imageUrl);
+
   return (
     <PublicPageShell>
+      {personJsonLds.map((jsonLd, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       <div className="flex flex-col gap-6 max-w-4xl mx-auto">
         
         {/* Back Link */}

@@ -8,6 +8,7 @@ import { getPublicMediaUrl } from '../../../lib/utils/media-url';
 import { formatHistoricalDate, parseEventDate, getCurrentArgentinaDate } from '../../../lib/utils/date';
 import { getPublicEditorialRelations } from '../../../lib/public-content/public-editorial-relations';
 import PublicEditorialRelations from '../../../components/public/PublicEditorialRelations';
+import { getArticleJsonLd } from '../../../lib/seo/json-ld';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -92,8 +93,49 @@ export default async function ContentDetailPage({ params }: PageProps) {
 
   const relations = await getPublicEditorialRelations('content', content.id);
 
+  // Resolve cover image for JSON-LD
+  let imageUrl: string | undefined = undefined;
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data: rels } = await supabase
+      .from('editorial_relations')
+      .select('target_entity_id')
+      .eq('source_entity_type', 'content')
+      .eq('source_entity_id', content.id)
+      .eq('target_entity_type', 'media_asset');
+
+    if (rels && rels.length > 0) {
+      const assetIds = rels.map((r: any) => r.target_entity_id);
+      const { data: assets } = await supabase
+        .from('media_assets')
+        .select('bucket_name, storage_path, asset_type')
+        .in('id', assetIds)
+        .eq('status', 'active')
+        .eq('visibility', 'public');
+
+      if (assets && assets.length > 0) {
+        const imageAsset = assets.find((a: any) =>
+          ['cover_image', 'content_image', 'gallery_image', 'historical_photo'].includes(a.asset_type)
+        ) || assets[0];
+        imageUrl = getPublicMediaUrl(imageAsset.bucket_name, imageAsset.storage_path);
+      }
+    }
+  } catch (e) {
+    console.error('Error resolving JSON-LD image:', e);
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const articleJsonLds = getArticleJsonLd(siteUrl, content, imageUrl);
+
   return (
     <PublicPageShell>
+      {articleJsonLds.map((jsonLd, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
         <article className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 md:p-12 flex flex-col gap-6 w-full">
             

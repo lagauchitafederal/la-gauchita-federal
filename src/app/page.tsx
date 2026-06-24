@@ -38,6 +38,7 @@ import ArchiveAssetCard from '../components/cards/ArchiveAssetCard';
 import { getPublishedMagazines } from '../lib/public-content/public-magazines';
 import { stripHtml, truncateText } from '../lib/utils/formatters';
 import { createServerSupabaseClient } from '../lib/supabase/server';
+import { getHomeJsonLd } from '../lib/seo/json-ld';
 
 export const metadata: Metadata = {
   title: 'La Gauchita Federal',
@@ -188,8 +189,18 @@ export default async function Home() {
   const activeInstitutions = (institutions || []).slice(0, 4); // F. Max 4 institutions
   const publicRecognitions = (recognitions || []).slice(0, 3); // E. Max 3 recognitions
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const homeJsonLds = getHomeJsonLd(siteUrl);
+
   return (
     <PublicPageShell maxWidth="max-w-4xl">
+      {homeJsonLds.map((jsonLd, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       
       {/* A. HERO PRINCIPAL */}
       {leadStory ? (

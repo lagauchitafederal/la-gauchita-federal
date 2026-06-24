@@ -6,6 +6,7 @@ import PublicEditorialRelations from '../../../components/public/PublicEditorial
 import PublicPageShell from '../../../components/public/PublicPageShell';
 import type { Metadata } from 'next';
 import { formatInstitutionType } from '../../../lib/utils/formatters';
+import { getInstitutionJsonLd } from '../../../lib/seo/json-ld';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -57,8 +58,18 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
   // Fetch related editorial relations if the institution has an ID
   const relations = inst.id ? await getPublicEditorialRelations('institution', inst.id) : [];
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const instJsonLds = getInstitutionJsonLd(siteUrl, inst, inst.logo_url || null);
+
   return (
     <PublicPageShell>
+      {instJsonLds.map((jsonLd, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       <div className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col gap-6">
           
           {/* Navigation / Header */}

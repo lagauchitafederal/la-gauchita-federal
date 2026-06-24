@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getActiveRecognitionBySlug } from '../../../lib/public-content/public-content';
 import PublicPageShell from '../../../components/public/PublicPageShell';
 import type { Metadata } from 'next';
+import { getRecognitionJsonLd } from '../../../lib/seo/json-ld';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -48,8 +49,18 @@ export default async function RecognitionDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const recJsonLds = getRecognitionJsonLd(siteUrl, r);
+
   return (
     <PublicPageShell>
+      {recJsonLds.map((jsonLd, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       <div className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col gap-6">
           
           {/* Navigation / Header */}
