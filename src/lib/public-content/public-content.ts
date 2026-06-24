@@ -15,7 +15,7 @@ export interface PublicContent {
   is_featured: boolean;
   created_at: string;
   institutions?: { name: string; slug: string } | null;
-  categories?: { name: string } | null;
+  categories?: { id?: string; name: string; slug?: string } | null;
   region_id?: string | null;
   province_id?: string | null;
   municipality_id?: string | null;
@@ -148,7 +148,7 @@ export async function getPublishedContentsList(territory?: SelectedTerritory): P
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('id, title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
+      .select('id, title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(id, name, slug), content_types(code, name, slug)')
       .order('is_featured', { ascending: false })
       .order('publish_date', { ascending: false })
       .limit(100);
