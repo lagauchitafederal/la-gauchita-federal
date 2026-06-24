@@ -5,6 +5,7 @@ import AdminSectionHeader from '../../../../../components/admin/AdminSectionHead
 import EditContentForm from '../../../../../components/admin/content/EditContentForm';
 import { getAdminContentById } from '../../../../../lib/admin/admin-content';
 import { getContentVersions } from '../../../../../lib/admin/admin-content-versions';
+import { getAssignmentsByContent, getAdministrativeProfiles, checkUserIsAdminOrEditor } from '../../../../../lib/admin/admin-editorial-assignments';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -23,12 +24,24 @@ export default async function EditContenidoPage({ params }: EditPageProps) {
   
   let content = null;
   let versions: any[] = [];
+  let assignments: any[] = [];
+  let adminProfiles: any[] = [];
+  let isAdminOrEditor = false;
   let isError = false;
 
   try {
     content = await getAdminContentById(id);
     if (content) {
-      versions = await getContentVersions(id);
+      const [versionsData, assignmentsData, profilesData, authorized] = await Promise.all([
+        getContentVersions(id),
+        getAssignmentsByContent(id),
+        getAdministrativeProfiles(),
+        checkUserIsAdminOrEditor(),
+      ]);
+      versions = versionsData;
+      assignments = assignmentsData;
+      adminProfiles = profilesData;
+      isAdminOrEditor = authorized;
     }
   } catch (error) {
     isError = true;
@@ -71,7 +84,13 @@ export default async function EditContenidoPage({ params }: EditPageProps) {
           </Link>
         </div>
       ) : (
-        <EditContentForm content={content} versions={versions} />
+        <EditContentForm
+          content={content}
+          versions={versions}
+          assignments={assignments}
+          adminProfiles={adminProfiles}
+          isAdminOrEditor={isAdminOrEditor}
+        />
       )}
 
     </AdminShell>

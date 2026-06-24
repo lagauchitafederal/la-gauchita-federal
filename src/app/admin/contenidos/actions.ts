@@ -128,3 +128,36 @@ export async function restoreContentVersionAction(versionId: string, contentId: 
   return result;
 }
 
+import { createAssignment, updateAssignmentStatus } from '../../../lib/admin/admin-editorial-assignments';
+
+export async function createAssignmentAction(params: {
+  entity_id: string;
+  assigned_to_profile_id: string;
+  notes?: string | null;
+  due_date?: string | null;
+}) {
+  const result = await createAssignment(params);
+  if (result.success) {
+    revalidatePath(`/admin/contenidos/${params.entity_id}/editar`);
+    revalidatePath('/admin/asignaciones');
+  }
+  return result;
+}
+
+export async function updateAssignmentStatusAction(
+  assignmentId: string,
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled',
+  notes?: string | null,
+  dueDate?: string | null,
+  contentId?: string
+) {
+  const result = await updateAssignmentStatus(assignmentId, status, notes, dueDate);
+  if (result.success) {
+    if (contentId) {
+      revalidatePath(`/admin/contenidos/${contentId}/editar`);
+    }
+    revalidatePath('/admin/asignaciones');
+  }
+  return result;
+}
+

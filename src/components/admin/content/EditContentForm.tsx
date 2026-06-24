@@ -4,14 +4,28 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AdminContentDetail } from '../../../lib/admin/admin-content';
-import { updateContentAction, restoreContentVersionAction } from '../../../app/admin/contenidos/actions';
+import {
+  updateContentAction,
+  restoreContentVersionAction,
+  createAssignmentAction,
+  updateAssignmentStatusAction
+} from '../../../app/admin/contenidos/actions';
 
 interface EditContentFormProps {
   content: AdminContentDetail;
   versions: any[];
+  assignments: any[];
+  adminProfiles: any[];
+  isAdminOrEditor?: boolean;
 }
 
-export default function EditContentForm({ content, versions }: EditContentFormProps) {
+export default function EditContentForm({
+  content,
+  versions,
+  assignments,
+  adminProfiles,
+  isAdminOrEditor = false
+}: EditContentFormProps) {
   const router = useRouter();
   
   // Helper to format date into YYYY-MM-DD
@@ -60,6 +74,14 @@ export default function EditContentForm({ content, versions }: EditContentFormPr
   // Restoration states
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [selectedVersionToRestore, setSelectedVersionToRestore] = useState<any | null>(null);
+
+  // Editorial assignments states
+  const [assignedTo, setAssignedTo] = useState('');
+  const [taskNotes, setTaskNotes] = useState('');
+  const [taskDueDate, setTaskDueDate] = useState('');
+  const [taskLoading, setTaskLoading] = useState(false);
+  const [taskError, setTaskError] = useState<string | null>(null);
+  const [taskSuccess, setTaskSuccess] = useState<string | null>(null);
 
   // Derive status
   const isScheduled = status === 'published' && publishDate && new Date(publishDate).getTime() > Date.now();
@@ -139,6 +161,68 @@ export default function EditContentForm({ content, versions }: EditContentFormPr
     } catch (err: any) {
       setErrorMsg(err.message || 'Ocurrió un error inesperado al restaurar la versión.');
       setLoading(false);
+    }
+  };
+
+  const handleCreateAssignment = async () => {
+    if (!assignedTo) return;
+    setTaskLoading(true);
+    setTaskError(null);
+    setTaskSuccess(null);
+
+    try {
+      const res = await createAssignmentAction({
+        entity_id: content.id,
+        assigned_to_profile_id: assignedTo,
+        notes: taskNotes.trim() || null,
+        due_date: taskDueDate ? new Date(taskDueDate).toISOString() : null,
+      });
+
+      if (res.success) {
+        setTaskSuccess('Asignación editorial creada correctamente.');
+        setAssignedTo('');
+        setTaskNotes('');
+        setTaskDueDate('');
+        router.refresh();
+      } else {
+        setTaskError(res.error || 'Ocurrió un error al crear la asignación.');
+      }
+    } catch (err: any) {
+      setTaskError(err.message || 'Ocurrió un error inesperado al procesar la asignación.');
+    } finally {
+      setTaskLoading(false);
+    }
+  };
+
+  const handleUpdateTaskStatus = async (
+    assignmentId: string,
+    newStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+  ) => {
+    setTaskLoading(true);
+    setTaskError(null);
+    setTaskSuccess(null);
+
+    try {
+      const res = await updateAssignmentStatusAction(
+        assignmentId,
+        newStatus,
+        null,
+        null,
+        content.id
+      );
+
+      if (res.success) {
+        setTaskSuccess(`Asignación editorial marcada como: ${
+          newStatus === 'completed' ? 'Completada' : newStatus === 'cancelled' ? 'Cancelada' : 'En curso'
+        }.`);
+        router.refresh();
+      } else {
+        setTaskError(res.error || 'Ocurrió un error al actualizar el estado de la asignación.');
+      }
+    } catch (err: any) {
+      setTaskError(err.message || 'Ocurrió un error inesperado al actualizar el estado.');
+    } finally {
+      setTaskLoading(false);
     }
   };
 
@@ -423,6 +507,214 @@ export default function EditContentForm({ content, versions }: EditContentFormPr
         </div>
 
       </form>
+
+      {/* Trabajo Editorial Section */}
+      <div className="bg-white border border-stone-beige rounded-lg shadow-sm p-6 sm:p-8 flex flex-col gap-6">
+        <div className="border-b border-stone-beige pb-3">
+          <h3 className="text-lg font-serif font-black text-charcoal">
+            Trabajo editorial
+          </h3>
+          <p className="text-xs text-stone-500 font-mono mt-0.5">
+            Asignación de revisiones y tareas de redacción para este contenido.
+          </p>
+        </div>
+
+        {/* Success and Error Banners for Task operations */}
+        {taskSuccess && (
+          <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-md">
+            <p className="text-xs text-emerald-800 font-bold font-mono">
+              {taskSuccess}
+            </p>
+          </div>
+        )}
+
+        {taskError && (
+          <div className="bg-red-50 border border-red-200 p-4 rounded-md">
+            <p className="text-xs text-red-800 font-bold font-mono">
+              Error: {taskError}
+            </p>
+          </div>
+        )}
+
+        {/* Existing Tasks List */}
+        {assignments.length === 0 ? (
+          <p className="text-xs text-stone-500 italic font-serif">
+            No hay asignaciones editoriales registradas para este contenido todavía.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {assignments.map((task) => {
+              const isTaskActive = ['pending', 'in_progress'].includes(task.status);
+              
+              return (
+                <div
+                  key={task.id}
+                  className="p-4 rounded-md border border-stone-beige/80 bg-warm-white/40 flex flex-col gap-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-beige/40 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-charcoal">
+                        Asignado a: <strong>{task.assigned_to_name}</strong>
+                      </span>
+                      <span className="text-[10px] text-stone-400 font-mono">
+                        • Asignado por: {task.assigned_by_name}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {task.status === 'completed' ? (
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono">
+                          Completada
+                        </span>
+                      ) : task.status === 'cancelled' ? (
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-stone-100 text-stone-600 border border-stone-200 font-mono">
+                          Cancelada
+                        </span>
+                      ) : task.status === 'in_progress' ? (
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 font-mono">
+                          En curso
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 font-mono">
+                          Pendiente
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {task.notes && (
+                    <div className="text-xs font-serif text-stone-750 whitespace-pre-wrap bg-white/60 p-2.5 rounded border border-stone-beige/40">
+                      <strong>Instrucción editorial:</strong>
+                      <p className="mt-1">{task.notes}</p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-between gap-4 text-[10px] text-stone-500 font-mono">
+                    <div className="flex flex-col gap-0.5">
+                      <span>Asignado el: {new Date(task.created_at).toLocaleDateString('es-AR')}</span>
+                      {task.due_date && (
+                        <span className="text-earth-red font-bold">
+                          Vence el: {new Date(task.due_date).toLocaleString('es-AR')}
+                        </span>
+                      )}
+                      {task.completed_at && (
+                        <span className="text-emerald-700 font-bold">
+                          Completada el: {new Date(task.completed_at).toLocaleString('es-AR')}
+                        </span>
+                      )}
+                    </div>
+
+                    {isTaskActive && isAdminOrEditor && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {task.status === 'pending' && (
+                          <button
+                            type="button"
+                            disabled={taskLoading}
+                            onClick={() => handleUpdateTaskStatus(task.id, 'in_progress')}
+                            className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[9px] uppercase font-bold tracking-wider rounded font-mono transition-colors"
+                          >
+                            Iniciar tarea
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={taskLoading}
+                          onClick={() => handleUpdateTaskStatus(task.id, 'completed')}
+                          className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[9px] uppercase font-bold tracking-wider rounded font-mono transition-colors"
+                        >
+                          Completar
+                        </button>
+                        <button
+                          type="button"
+                          disabled={taskLoading}
+                          onClick={() => handleUpdateTaskStatus(task.id, 'cancelled')}
+                          className="px-2 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 text-[9px] uppercase font-bold tracking-wider rounded font-mono transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Create Assignment Form Block */}
+        {isAdminOrEditor && (
+          <div className="border-t border-stone-beige/65 pt-6 mt-2 flex flex-col gap-4">
+            <h4 className="text-sm font-serif font-black text-charcoal">
+              Crear nueva asignación editorial
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Admin profile selector */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="assignTo" className="text-[9px] uppercase tracking-wider font-bold text-stone-500 font-mono">
+                  Asignar a
+                </label>
+                <select
+                  id="assignTo"
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  disabled={taskLoading}
+                  className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono bg-white"
+                >
+                  <option value="">Seleccione un editor/administrador...</option>
+                  {adminProfiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.display_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Optional due date */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="taskDueDate" className="text-[9px] uppercase tracking-wider font-bold text-stone-500 font-mono">
+                  Fecha de vencimiento (Opcional)
+                </label>
+                <input
+                  id="taskDueDate"
+                  type="datetime-local"
+                  value={taskDueDate}
+                  onChange={(e) => setTaskDueDate(e.target.value)}
+                  disabled={taskLoading}
+                  className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red font-mono bg-white"
+                />
+              </div>
+
+              {/* Note text field */}
+              <div className="flex flex-col gap-1.5 sm:col-span-2">
+                <label htmlFor="notes" className="text-[9px] uppercase tracking-wider font-bold text-stone-500 font-mono">
+                  Instrucción editorial / Nota de trabajo
+                </label>
+                <textarea
+                  id="notes"
+                  rows={3}
+                  value={taskNotes}
+                  onChange={(e) => setTaskNotes(e.target.value)}
+                  disabled={taskLoading}
+                  placeholder="Escriba aquí los detalles de la revisión o cambios solicitados."
+                  className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-earth-red focus:border-earth-red resize-y"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                disabled={taskLoading || !assignedTo}
+                onClick={handleCreateAssignment}
+                className="px-5 py-2.5 bg-charcoal hover:bg-charcoal/90 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors disabled:bg-stone-300 disabled:cursor-not-allowed"
+              >
+                {taskLoading ? 'Procesando...' : 'Asignar Tarea'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Historial Editorial Section */}
       <div className="bg-white border border-stone-beige rounded-lg shadow-sm p-6 sm:p-8 flex flex-col gap-6">
