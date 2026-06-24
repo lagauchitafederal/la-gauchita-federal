@@ -11,6 +11,7 @@ const publicLinks = [
   { href: '/instituciones', label: 'Instituciones' },
   { href: '/reconocimientos', label: 'Reconocimientos' },
   { href: '/archivo', label: 'Archivo' },
+  { href: '/revista', label: 'Revista' },
   { href: '/acerca', label: 'Acerca' },
 ];
 

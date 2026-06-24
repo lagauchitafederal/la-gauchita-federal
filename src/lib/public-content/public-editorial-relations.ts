@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '../supabase/server';
 export interface PublicRelationDetail {
   id: string;
   relationType: string;
-  relatedType: 'content' | 'person' | 'institution' | 'recognition' | 'media_asset';
+  relatedType: 'content' | 'person' | 'institution' | 'recognition' | 'media_asset' | 'magazine_edition';
   relatedId: string;
   title: string;
   description: string | null;
@@ -16,7 +16,7 @@ export interface PublicRelationDetail {
  * Prevents N+1 queries by batch loading details and enforces RLS/public visibility filters.
  */
 export async function getPublicEditorialRelations(
-  entityType: 'person' | 'content' | 'institution' | 'recognition',
+  entityType: 'person' | 'content' | 'institution' | 'recognition' | 'magazine_edition',
   entityId: string
 ): Promise<PublicRelationDetail[]> {
   try {
@@ -48,6 +48,7 @@ export async function getPublicEditorialRelations(
       institution: [],
       recognition: [],
       media_asset: [],
+      magazine_edition: [],
     };
 
     const tempRelations = relations.map((rel: any) => {
@@ -62,7 +63,7 @@ export async function getPublicEditorialRelations(
       return {
         id: rel.id,
         relationType: rel.relation_type,
-        relatedType: relatedType as 'content' | 'person' | 'institution' | 'recognition' | 'media_asset',
+        relatedType: relatedType as 'content' | 'person' | 'institution' | 'recognition' | 'media_asset' | 'magazine_edition',
         relatedId,
       };
     });
@@ -167,6 +168,26 @@ export async function getPublicEditorialRelations(
                   title: d.title || 'Archivo Adjunto',
                   description: d.description,
                   href: null, // No public details route for media assets
+                  contentTypeCode: null,
+                };
+              });
+            })
+        : Promise.resolve(),
+
+      // Magazine Editions (published & public)
+      idsByType.magazine_edition.length > 0
+        ? supabase
+            .from('magazine_editions')
+            .select('id, title, slug, description, edition_number')
+            .in('id', idsByType.magazine_edition)
+            .eq('status', 'published')
+            .eq('visibility', 'public')
+            .then(({ data }) => {
+              (data || []).forEach((d) => {
+                detailsMap[d.id] = {
+                  title: d.title || `Edición Nº ${d.edition_number}`,
+                  description: d.description,
+                  href: `/revista/${d.slug}`,
                   contentTypeCode: null,
                 };
               });
