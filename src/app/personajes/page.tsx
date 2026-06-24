@@ -8,6 +8,9 @@ import { getProvinces } from '../../lib/catalogs/catalogs';
 import { getPublicMediaUrl } from '../../lib/utils/media-url';
 import PublicPageShell from '../../components/public/PublicPageShell';
 
+import PersonCard from '../../components/cards/PersonCard';
+import { stripHtml } from '../../lib/utils/formatters';
+
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
@@ -99,6 +102,8 @@ export default async function PersonajesPage({ searchParams }: PersonajesPagePro
 
   const mainPersonLifeSpan = mainPerson ? getLifeSpan(mainPerson) : '';
 
+  const cleanMainBio = mainPerson?.short_bio ? stripHtml(mainPerson.short_bio) : '';
+
   return (
     <PublicPageShell maxWidth="max-w-4xl">
       <div className="flex flex-col gap-8">
@@ -171,9 +176,9 @@ export default async function PersonajesPage({ searchParams }: PersonajesPagePro
                   </span>
                 )}
 
-                {mainPerson.short_bio && (
+                {cleanMainBio && (
                   <p className="text-sm text-stone-700 leading-relaxed font-serif">
-                    {mainPerson.short_bio}
+                    {cleanMainBio}
                   </p>
                 )}
               </div>
@@ -286,57 +291,13 @@ export default async function PersonajesPage({ searchParams }: PersonajesPagePro
                 const lifeSpan = getLifeSpan(p);
                 
                 return (
-                  <div key={p.slug} className="bg-[#fcf8f2] border border-stone-beige rounded-lg overflow-hidden flex flex-col justify-between hover:border-muted-amber hover:shadow-sm transition-all duration-200">
-                    <div>
-                      {imageUrl ? (
-                        <div className="relative w-full h-40 bg-stone-100 overflow-hidden border-b border-stone-beige/70">
-                          <img
-                            src={imageUrl}
-                            alt={p.media_assets?.alt_text || p.full_name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full h-40 bg-[#f2ede4] flex flex-col items-center justify-center text-stone-400 p-4 border-b border-stone-beige/70">
-                          <svg className="w-10 h-10 text-stone-400/80 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                      )}
-                      
-                      <div className="p-4 flex flex-col gap-2.5">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[9px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase font-mono">
-                            {PERSON_TYPE_LABELS[p.person_type] || p.person_type}
-                          </span>
-                          {lifeSpan && (
-                            <span className="text-[9px] font-mono text-stone-500 font-bold uppercase tracking-wider">
-                              {lifeSpan}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <h4 className="font-serif font-black text-base text-charcoal hover:text-earth-red transition-colors leading-snug line-clamp-2">
-                          <Link href={`/personajes/${p.slug}`}>
-                            {p.full_name}
-                          </Link>
-                        </h4>
-
-                        {p.short_bio && (
-                          <p className="text-xs text-stone-700 leading-relaxed font-serif line-clamp-3">
-                            {p.short_bio}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="p-4 pt-2 border-t border-stone-beige/50 mt-auto flex justify-between items-center text-[9px] font-mono text-stone-500">
-                      <span>📍 {getTerritoryLabel(p)}</span>
-                      <Link href={`/personajes/${p.slug}`} className="text-earth-red hover:underline font-bold uppercase tracking-wider">
-                        Biografía &rarr;
-                      </Link>
-                    </div>
-                  </div>
+                  <PersonCard
+                    key={p.slug}
+                    person={p}
+                    imageUrl={imageUrl}
+                    lifeSpan={lifeSpan}
+                    territoryLabel={getTerritoryLabel(p)}
+                  />
                 );
               })}
             </div>

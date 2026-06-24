@@ -9,8 +9,9 @@ import {
 } from '../../lib/public-content/public-content';
 import { getPublicEditorialRelations } from '../../lib/public-content/public-editorial-relations';
 import { getRegions, getProvinces, getMunicipalities, getCategories } from '../../lib/catalogs/catalogs';
-import { formatHistoricalDate } from '../../lib/utils/date';
 import PublicPageShell from '../../components/public/PublicPageShell';
+import ContentCard from '../../components/cards/ContentCard';
+import { stripHtml } from '../../lib/utils/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,6 +111,9 @@ export default async function ContenidosPage({ searchParams }: ContenidosPagePro
   const leadStoryTerritoryLabel = leadStory
     ? getContentTerritoryLabel(leadStory, regions, provinces, municipalities)
     : null;
+
+  const cleanLeadSubtitle = leadStory?.subtitle ? stripHtml(leadStory.subtitle) : '';
+  const cleanLeadSummary = leadStory?.summary ? stripHtml(leadStory.summary) : '';
 
   return (
     <PublicPageShell maxWidth="max-w-4xl">
@@ -211,16 +215,16 @@ export default async function ContenidosPage({ searchParams }: ContenidosPagePro
                 </Link>
               </h2>
 
-              {leadStory.subtitle && (
+              {cleanLeadSubtitle && (
                 <p className="text-sm font-semibold text-stone-750 italic leading-relaxed">
-                  {leadStory.subtitle}
+                  {cleanLeadSubtitle}
                 </p>
               )}
             </div>
 
-            {leadStory.summary && (
+            {cleanLeadSummary && (
               <p className="text-sm text-stone-700 leading-relaxed font-serif">
-                {leadStory.summary}
+                {cleanLeadSummary}
               </p>
             )}
 
@@ -282,45 +286,11 @@ export default async function ContenidosPage({ searchParams }: ContenidosPagePro
               {featuredContents.map((c) => {
                 const tLabel = getContentTerritoryLabel(c, regions, provinces, municipalities);
                 return (
-                  <div key={c.slug} className="p-5 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-3 hover:border-muted-amber hover:shadow-sm transition-all duration-200 justify-between">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[9px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase font-mono">
-                          {c.categories?.name || 'Contenido'}
-                        </span>
-                        {tLabel && (
-                          <span className="text-[9px] font-mono text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/65 uppercase">
-                            📍 {tLabel}
-                          </span>
-                        )}
-                      </div>
-
-                      <h4 className="font-serif font-bold text-base text-charcoal hover:text-earth-red transition-colors leading-snug line-clamp-2">
-                        <Link href={`/contenidos/${c.slug}`}>
-                          {c.title}
-                        </Link>
-                      </h4>
-
-                      {c.subtitle && (
-                        <p className="text-[11px] font-semibold text-stone-600 italic line-clamp-1">{c.subtitle}</p>
-                      )}
-
-                      {c.summary && (
-                        <p className="text-xs text-stone-700 leading-relaxed line-clamp-3 font-serif">
-                          {c.summary}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="pt-3 border-t border-stone-beige/50 mt-2 flex justify-between items-center text-[9px] font-mono text-stone-500">
-                      {c.publish_date && (
-                        <span>Publicado: {new Date(c.publish_date).toLocaleDateString()}</span>
-                      )}
-                      <Link href={`/contenidos/${c.slug}`} className="text-earth-red hover:underline font-bold uppercase tracking-wider">
-                        Leer historia &rarr;
-                      </Link>
-                    </div>
-                  </div>
+                  <ContentCard
+                    key={c.slug}
+                    content={c}
+                    territoryLabel={tLabel}
+                  />
                 );
               })}
             </div>

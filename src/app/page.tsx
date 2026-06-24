@@ -20,10 +20,24 @@ import {
 } from '../lib/public-content/public-content';
 import { getPublishedPeople } from '../lib/public-content/public-people';
 import { getPublicEditorialRelations } from '../lib/public-content/public-editorial-relations';
+import { resolveHomepageLayout } from '../lib/public-content/public-homepage-slots';
 import PublicPageShell from '../components/public/PublicPageShell';
 import { formatInstitutionType, formatAssetType } from '../lib/utils/formatters';
 import { getPublicMediaUrl } from '../lib/utils/media-url';
 import { getEphemerisLabel, formatHistoricalDate } from '../lib/utils/date';
+
+// Consolidated Card components imports
+import ContentCard from '../components/cards/ContentCard';
+import PersonCard from '../components/cards/PersonCard';
+import InstitutionCard from '../components/cards/InstitutionCard';
+import RecognitionCard from '../components/cards/RecognitionCard';
+import MagazineEditionCard from '../components/cards/MagazineEditionCard';
+import ArchiveAssetCard from '../components/cards/ArchiveAssetCard';
+
+// Utility and DB imports
+import { getPublishedMagazines } from '../lib/public-content/public-magazines';
+import { stripHtml, truncateText } from '../lib/utils/formatters';
+import { createServerSupabaseClient } from '../lib/supabase/server';
 
 export const metadata: Metadata = {
   title: 'La Gauchita Federal',
@@ -94,7 +108,9 @@ export default async function Home() {
     recognitions,
     mediaAssets,
     todayEphemerides,
-    people
+    people,
+    editorialLayout,
+    magazines
   ] = await Promise.all([
     getRegions(),
     getProvinces(),
@@ -107,23 +123,53 @@ export default async function Home() {
     getActiveRecognitions(),
     getPublicMediaAssets(),
     getTodayEphemerides(territory),
-    getPublishedPeople(territory)
+    getPublishedPeople(territory),
+    resolveHomepageLayout(territory),
+    getPublishedMagazines()
   ]);
 
-  // Composition: determine leadStory and featuredContents
-  const allContents = contents || [];
-  const generalContents = allContents.filter(c => c.content_types?.code !== 'ephemeris');
+  // Composition: determine leadStory and featuredContents from resolved layout
+  const { leadStory, featuredContents } = editorialLayout;
 
-  let leadStory: PublicContent | null = null;
-  let featuredContents: PublicContent[] = [];
+  // Fetch cover image for lead story if any from editorial relations
+  const leadImage = await (async () => {
+    if (!leadStory) return null;
+    try {
+      const supabase = createServerSupabaseClient();
+      const { data: rels } = await supabase
+        .from('editorial_relations')
+        .select('target_entity_id')
+        .eq('source_entity_type', 'content')
+        .eq('source_entity_id', leadStory.id)
+        .eq('target_entity_type', 'media_asset');
 
-  if (generalContents.length > 0) {
-    leadStory = generalContents[0];
-    featuredContents = generalContents.slice(1, 7); // Show between 3 and 6
-  } else if (allContents.length > 0) {
-    leadStory = allContents[0];
-    featuredContents = allContents.slice(1, 7);
-  }
+      if (!rels || rels.length === 0) return null;
+      const assetIds = rels.map((r: any) => r.target_entity_id);
+
+      const { data: assets } = await supabase
+        .from('media_assets')
+        .select('bucket_name, storage_path, alt_text, asset_type')
+        .in('id', assetIds)
+        .eq('status', 'active')
+        .eq('visibility', 'public');
+
+      if (!assets || assets.length === 0) return null;
+
+      // Prioritize image types: cover_image, content_image, gallery_image, historical_photo
+      const imageAsset = assets.find((a: any) =>
+        ['cover_image', 'content_image', 'gallery_image', 'historical_photo'].includes(a.asset_type)
+      );
+
+      return imageAsset || assets[0];
+    } catch (e) {
+      console.error('Error fetching lead story image:', e);
+      return null;
+    }
+  })();
+
+  const leadImageUrl = leadImage
+    ? getPublicMediaUrl(leadImage.bucket_name, leadImage.storage_path)
+    : null;
 
   // Fetch relations for lead story
   const leadRelations = leadStory && leadStory.id
@@ -135,157 +181,163 @@ export default async function Home() {
     : null;
 
   // Filter lists according to counts and requirements
-  const protagonists = (people || []).slice(0, 8); // Between 4 and 8
-  const activeMediaAssets = (mediaAssets || []).slice(0, 6); // Between 3 and 6
-  const activeInstitutions = (institutions || []).slice(0, 4); // Up to 4
-  const publicRecognitions = (recognitions || []).slice(0, 3); // Closing block, up to 3
+  const mainStories = (featuredContents || []).slice(0, 4); // B. Max 4 stories
+  const protagonists = (people || []).slice(0, 4); // D. Max 4 characters
+  const activeMediaAssets = (mediaAssets || []).slice(0, 3); // E. Max 3 assets
+  const magazineEditions = (magazines || []).slice(0, 3); // E. Max 3 magazine editions
+  const activeInstitutions = (institutions || []).slice(0, 4); // F. Max 4 institutions
+  const publicRecognitions = (recognitions || []).slice(0, 3); // E. Max 3 recognitions
 
   return (
     <PublicPageShell maxWidth="max-w-4xl">
-      {/* A. CABECERA EDITORIAL / IDENTIDAD */}
-      <header className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col lg:flex-row gap-8 lg:items-center">
-        <div className="flex-1 flex flex-col gap-6 text-left">
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-earth-red">
-              Portal Federal
-            </span>
-            <h1 className="text-4xl md:text-5xl font-serif font-black tracking-tight text-charcoal">
-              La Gauchita Federal
-            </h1>
-            <p className="text-lg text-stone-750 font-serif font-bold italic leading-relaxed">
-              Archivo vivo de historia, cultura y memoria federal.
-            </p>
-          </div>
-          
-          <p className="text-sm text-stone-650 leading-relaxed">
-            Una plataforma impulsada para reunir contenidos, personajes, instituciones, reconocimientos y materiales de archivo vinculados a la identidad cultural de cada argentino.
-          </p>
+      
+      {/* A. HERO PRINCIPAL */}
+      {leadStory ? (
+        <section className="bg-warm-white border border-stone-beige rounded-lg overflow-hidden flex flex-col md:flex-row shadow-sm hover:border-muted-amber hover:shadow-md transition-all duration-350">
+          {leadImageUrl ? (
+            <div className="w-full md:w-1/2 h-64 md:h-auto min-h-[320px] relative bg-stone-100 border-b md:border-b-0 md:border-r border-stone-beige/70">
+              <img
+                src={leadImageUrl}
+                alt={leadImage?.alt_text || leadStory.title}
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
+              />
+            </div>
+          ) : (
+            /* Editorial Fallback Layout when no real image exists */
+            <div className="w-full md:w-1/2 min-h-[320px] bg-[#fbf8f3] flex flex-col justify-between p-8 border-b md:border-b-0 md:border-r border-stone-beige/75 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-stone-beige/10 rounded-full blur-xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-earth-red/5 rounded-full blur-xl pointer-events-none" />
+              
+              <div className="flex flex-col gap-3 z-10">
+                <span className="text-[10px] font-bold text-earth-red bg-earth-red/5 px-2.5 py-0.5 rounded border border-earth-red/10 tracking-widest uppercase font-mono self-start">
+                  Patrimonio & Memoria
+                </span>
+                <span className="font-serif italic text-stone-500 text-sm">
+                  Documento e Investigación
+                </span>
+              </div>
 
-          <div className="flex flex-wrap gap-4 mt-2">
-            <Link
-              href="/contenidos"
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-earth-red text-white text-xs uppercase tracking-wider font-bold rounded-md hover:bg-earth-red/90 transition-colors duration-200"
-            >
-              Explorar contenidos
-            </Link>
-            <Link
-              href="/archivo"
-              className="inline-flex items-center justify-center px-5 py-2.5 border border-stone-beige text-xs uppercase tracking-wider font-bold rounded-md text-stone-700 bg-white hover:bg-stone-50 hover:text-earth-red transition-all duration-200"
-            >
-              Ver archivo documental
-            </Link>
-          </div>
+              <div className="mt-8 z-10 flex flex-col gap-2">
+                <p className="font-serif font-black text-2xl text-charcoal leading-tight">
+                  {leadStory.title}
+                </p>
+                <div className="w-16 h-[2px] bg-earth-red mt-2" />
+              </div>
 
-          {/* Reduced weight Indicators */}
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-mono text-stone-500 border-t border-stone-beige/50 pt-4 mt-2">
-            {contents.length > 0 && (
-              <span>📖 <strong>{contents.length}</strong> Contenidos</span>
-            )}
-            {institutions.length > 0 && (
-              <span>🏛️ <strong>{institutions.length}</strong> Instituciones</span>
-            )}
-            {recognitions.length > 0 && (
-              <span>⭐ <strong>{recognitions.length}</strong> Avales</span>
-            )}
-            {mediaAssets.length > 0 && (
-              <span>🖼️ <strong>{mediaAssets.length}</strong> Archivos</span>
-            )}
-          </div>
-        </div>
-      </header>
+              <div className="mt-8 z-10 flex items-center justify-between text-[9px] font-mono text-stone-400">
+                <span>LA GAUCHITA FEDERAL</span>
+                <span>{leadStory.publish_date ? new Date(leadStory.publish_date).toLocaleDateString('es-AR') : ''}</span>
+              </div>
+            </div>
+          )}
 
-      {/* B. PORTADA PRINCIPAL */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Column: Titular Principal */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          {leadStory ? (
-            <div className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-4 shadow-sm h-full justify-between">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between pb-3 border-b border-stone-beige/80">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-earth-red font-mono">
-                    Titular Destacado
+          {/* Details Column */}
+          <div className="p-6 md:p-8 flex-1 flex flex-col justify-between gap-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-beige/60">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[9px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase font-mono">
+                    {leadStory.content_types?.name || 'Destacado'}
                   </span>
-                  {leadStoryTerritoryLabel && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/60 uppercase tracking-wide">
-                      📍 {leadStoryTerritoryLabel}
+                  {leadStory.categories?.name && (
+                    <span className="text-[9px] font-bold text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/65 uppercase font-mono">
+                      {leadStory.categories.name}
                     </span>
                   )}
                 </div>
-
-                <div className="flex flex-col gap-2.5">
-                  <span className="text-[10px] font-bold text-earth-red bg-earth-red/5 px-2.5 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase self-start">
-                    {leadStory.content_types?.name || 'Destacado'}
+                
+                {leadStoryTerritoryLabel && (
+                  <span className="text-[9px] font-mono text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/65 uppercase tracking-wide">
+                    📍 {leadStoryTerritoryLabel}
                   </span>
-                  <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal leading-tight hover:text-earth-red transition-colors duration-200">
-                    <Link href={`/contenidos/${leadStory.slug}`}>
-                      {leadStory.title}
-                    </Link>
-                  </h2>
-                </div>
+                )}
+              </div>
 
+              <div className="flex flex-col gap-3">
+                <h2 className="text-2xl md:text-3xl font-serif font-black text-charcoal leading-tight hover:text-earth-red transition-colors duration-200">
+                  <Link href={`/contenidos/${leadStory.slug}`}>
+                    {leadStory.title}
+                  </Link>
+                </h2>
+                
                 {leadStory.subtitle && (
-                  <p className="text-sm font-semibold text-stone-750 italic leading-relaxed">
-                    {leadStory.subtitle}
+                  <p className="text-xs font-semibold text-stone-700 italic leading-relaxed">
+                    {stripHtml(leadStory.subtitle)}
                   </p>
                 )}
 
                 {leadStory.summary && (
-                  <p className="text-sm text-stone-650 leading-relaxed font-serif">
-                    {leadStory.summary}
+                  <p className="text-sm text-stone-700 leading-relaxed font-serif">
+                    {truncateText(stripHtml(leadStory.summary), 240)}
                   </p>
                 )}
-
-                <div>
-                  <Link
-                    href={`/contenidos/${leadStory.slug}`}
-                    className="inline-flex items-center text-xs font-bold text-earth-red hover:underline uppercase tracking-wider font-mono mt-1"
-                  >
-                    Leer la historia completa &rarr;
-                  </Link>
-                </div>
               </div>
+            </div>
 
-              {/* Lecturas vinculadas */}
-              {leadRelations.length > 0 && (
-                <div className="pt-5 border-t border-stone-beige/60 flex flex-col gap-3">
-                  <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-stone-500">
-                    Lecturas vinculadas
-                  </span>
-                  <div className="flex flex-wrap gap-2.5">
-                    {leadRelations.slice(0, 3).map((rel) => {
-                      const typeLabel = rel.relatedType === 'content' && rel.contentTypeCode === 'ephemeris'
-                        ? 'Efeméride'
-                        : TYPE_LABELS[rel.relatedType] || rel.relatedType;
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t border-stone-beige/50">
+              <Link
+                href={`/contenidos/${leadStory.slug}`}
+                className="inline-flex items-center justify-center px-4 py-2 bg-earth-red hover:bg-earth-red/90 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors"
+              >
+                Leer historia completa &rarr;
+              </Link>
+              
+              <Link
+                href="/acerca"
+                className="inline-flex items-center justify-center px-4 py-2 border border-stone-beige hover:border-earth-red text-stone-700 hover:text-earth-red text-[10px] uppercase font-bold tracking-wider rounded font-mono bg-white transition-all"
+              >
+                Conocer el proyecto
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : (
+        /* Empty/Fallback main hero if absolutely no leadStory is available */
+        <header className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 text-center flex flex-col items-center gap-4">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-earth-red">
+            La Gauchita Federal
+          </span>
+          <h1 className="text-3xl md:text-4xl font-serif font-black tracking-tight text-charcoal">
+            Archivo Vivo de Historia y Cultura
+          </h1>
+          <p className="text-sm text-stone-600 max-w-lg">
+            Estamos preparando contenidos y recopilando documentos históricos de cada rincón del país.
+          </p>
+        </header>
+      )}
 
-                      const badgeContent = (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#fcf8f2] border border-stone-beige/85 hover:border-earth-red/60 rounded text-xs transition-colors duration-150">
-                          <span className="text-[8px] font-bold text-earth-red uppercase tracking-wider">
-                            {typeLabel}
-                          </span>
-                          <span className="text-stone-800 font-serif font-semibold">
-                            {rel.title}
-                          </span>
-                        </span>
-                      );
+      {/* B. BLOQUE PRINCIPAL DE HISTORIAS + C. EFEMÉRIDES */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Historias y Cultura */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
+            <h2 className="text-xl font-serif font-black text-charcoal">
+              Historias y cultura
+            </h2>
+            <Link href="/contenidos" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+              Ver todas &rarr;
+            </Link>
+          </div>
 
-                      if (rel.href) {
-                        return (
-                          <Link key={rel.id} href={rel.href} className="group">
-                            {badgeContent}
-                          </Link>
-                        );
-                      }
-                      return <span key={rel.id}>{badgeContent}</span>;
-                    })}
-                  </div>
-                </div>
-              )}
+          {mainStories.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {mainStories.map((c) => {
+                const tLabel = getContentTerritoryLabel(c, regions, provinces, municipalities);
+                return (
+                  <ContentCard
+                    key={c.slug}
+                    content={c}
+                    territoryLabel={tLabel}
+                  />
+                );
+              })}
             </div>
           ) : (
-            <div className="bg-stone-50 border border-stone-200/60 rounded-lg p-8 text-center flex items-center justify-center h-full">
+            <div className="bg-stone-50 border border-stone-200/60 rounded-lg p-8 text-center">
               <p className="text-xs text-stone-500 italic font-mono">
-                No hay contenidos destacados disponibles para este territorio.
+                No hay más historias publicadas para este territorio.
               </p>
             </div>
           )}
@@ -330,7 +382,7 @@ export default async function Home() {
                             </span>
                           )}
                         </div>
-                        <h3 className="font-serif font-black text-xl text-charcoal hover:text-earth-red transition-colors duration-200 leading-snug">
+                        <h3 className="font-serif font-bold text-lg text-charcoal hover:text-earth-red transition-colors duration-200 leading-snug">
                           <Link href={`/contenidos/${mainItem.slug}`}>
                             {mainItem.title}
                           </Link>
@@ -339,8 +391,8 @@ export default async function Home() {
                           {histDate}
                         </p>
                         {mainItem.summary && (
-                          <p className="text-xs text-stone-700 leading-relaxed line-clamp-4">
-                            {mainItem.summary}
+                          <p className="text-xs text-stone-705 leading-relaxed line-clamp-4 font-serif">
+                            {stripHtml(mainItem.summary)}
                           </p>
                         )}
                         <Link
@@ -398,75 +450,23 @@ export default async function Home() {
             )}
           </section>
         </div>
-
       </div>
 
-      {/* C. CRÓNICAS Y CONTENIDOS DESTACADOS */}
-      {featuredContents.length > 0 && (
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
-          <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
-            <h2 className="text-2xl font-serif font-black text-charcoal">
-              Crónicas y contenidos destacados
-            </h2>
-            <Link href="/contenidos" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
-              Ver todos &rarr;
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredContents.map((c) => {
-              const tLabel = getContentTerritoryLabel(c, regions, provinces, municipalities);
-              return (
-                <div key={c.slug} className="p-5 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-3 hover:border-muted-amber hover:shadow-sm transition-all duration-205 justify-between">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[9px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase">
-                        {c.content_types?.name || 'Contenido'}
-                      </span>
-                      {tLabel && (
-                        <span className="text-[9px] font-mono text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/60 uppercase">
-                          📍 {tLabel}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-serif font-bold text-base text-charcoal hover:text-earth-red transition-colors leading-snug line-clamp-2">
-                      <Link href={`/contenidos/${c.slug}`}>
-                        {c.title}
-                      </Link>
-                    </h3>
-                    {c.subtitle && (
-                      <p className="text-[11px] font-semibold text-stone-600 italic line-clamp-1">{c.subtitle}</p>
-                    )}
-                    {c.summary && (
-                      <p className="text-xs text-stone-700 leading-relaxed line-clamp-3">{c.summary}</p>
-                    )}
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-[9px] font-mono mt-2 pt-3 border-t border-stone-beige/50">
-                    {c.publish_date && (
-                      <span className="text-stone-500">{new Date(c.publish_date).toLocaleDateString()}</span>
-                    )}
-                    <Link href={`/contenidos/${c.slug}`} className="text-earth-red hover:underline font-bold uppercase tracking-wider">
-                      Leer más &rarr;
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* D. PROTAGONISTAS FEDERALES */}
+      {/* D. PERSONAJES DESTACADOS */}
       {protagonists.length > 0 && (
         <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
-          <div className="flex flex-col gap-1 pb-3 border-b border-stone-beige/85">
-            <h2 className="text-2xl font-serif font-black text-charcoal">
-              Protagonistas federales
-            </h2>
-            <p className="text-xs text-stone-500 font-mono italic">
-              Voces y trayectorias vinculadas con este territorio
-            </p>
+          <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
+            <div className="flex flex-col gap-0.5">
+              <h2 className="text-xl font-serif font-black text-charcoal">
+                Personajes destacados
+              </h2>
+              <p className="text-[10px] text-stone-500 font-mono italic">
+                Voces y trayectorias vinculadas con nuestra cultura
+              </p>
+            </div>
+            <Link href="/personajes" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+              Ver todos &rarr;
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -474,224 +474,149 @@ export default async function Home() {
               const imageUrl = p.media_assets
                 ? getPublicMediaUrl(p.media_assets.bucket_name, p.media_assets.storage_path)
                 : null;
+              const lifeSpan = (() => {
+                if (!p.birth_date && !p.death_date) return null;
+                const birthYear = p.birth_date ? p.birth_date.split('-')[0] : '¿?';
+                const deathYear = p.death_date ? p.death_date.split('-')[0] : 'Presente';
+                return `${birthYear} – ${deathYear}`;
+              })();
+              const tLabel = (() => {
+                if (p.municipalities?.name) return `${p.municipalities.name}, ${p.provinces?.name || ''}`;
+                if (p.provinces?.name) return p.provinces.name;
+                if (p.regions?.name) return p.regions.name;
+                return 'Ámbito Nacional';
+              })();
 
               return (
-                <div key={p.slug} className="bg-[#fcf8f2] border border-stone-beige rounded-lg overflow-hidden flex flex-col hover:border-muted-amber hover:shadow-sm transition-all duration-200 justify-between">
-                  <div>
-                    {imageUrl ? (
-                      <div className="relative w-full h-40 bg-stone-100 overflow-hidden border-b border-stone-beige/70">
-                        <img
-                          src={imageUrl}
-                          alt={p.media_assets?.alt_text || p.full_name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-40 bg-[#f2ede4] flex flex-col items-center justify-center text-stone-400 p-4 border-b border-stone-beige/70">
-                        <svg className="w-10 h-10 text-stone-400/80 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="p-4 flex flex-col gap-2">
-                      <span className="text-[8px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase self-start">
-                        {PERSON_TYPE_LABELS[p.person_type] || p.person_type}
-                      </span>
-                      <h3 className="font-serif font-black text-sm text-charcoal hover:text-earth-red transition-colors leading-snug line-clamp-2">
-                        <Link href={`/personajes/${p.slug}`}>
-                          {p.full_name}
-                        </Link>
-                      </h3>
-                      {p.short_bio && (
-                        <p className="text-xs text-stone-700 leading-relaxed font-serif line-clamp-3">{p.short_bio}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-4 pt-2 border-t border-stone-beige/50 mt-auto">
-                    <Link href={`/personajes/${p.slug}`} className="text-[9px] font-mono font-bold text-earth-red hover:underline uppercase tracking-wider">
-                      Ver perfil &rarr;
-                    </Link>
-                  </div>
-                </div>
+                <PersonCard
+                  key={p.slug}
+                  person={p}
+                  imageUrl={imageUrl}
+                  lifeSpan={lifeSpan}
+                  territoryLabel={tLabel}
+                />
               );
             })}
           </div>
         </section>
       )}
 
-      {/* E. ARCHIVO Y MEMORIA */}
+      {/* E.1 REVISTA DIGITAL */}
+      {magazineEditions.length > 0 && (
+        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
+          <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
+            <h2 className="text-xl font-serif font-black text-charcoal">
+              Revista La Gauchita
+            </h2>
+            <Link href="/revista" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+              Ver todas &rarr;
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {magazineEditions.map((edition) => (
+              <MagazineEditionCard key={edition.id} edition={edition} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* E.2 ARCHIVO Y MEMORIA */}
       {activeMediaAssets.length > 0 && (
         <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
           <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
-            <h2 className="text-2xl font-serif font-black text-charcoal">
+            <h2 className="text-xl font-serif font-black text-charcoal">
               Archivo y memoria
             </h2>
             <Link href="/archivo" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
               Explorar archivo &rarr;
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeMediaAssets.map((ma) => {
-              const imageUrl = getPublicMediaUrl(ma.bucket_name, ma.storage_path);
-              const isImage = 
-                (ma.mime_type && ma.mime_type.startsWith('image/')) ||
-                [
-                  'cover_image',
-                  'content_image',
-                  'gallery_image',
-                  'historical_photo'
-                ].includes(ma.asset_type);
-
-              const useContain = ['recognition_document', 'cover_image'].includes(ma.asset_type);
-
-              return (
-                <div key={ma.storage_path} className="bg-warm-white border border-stone-beige rounded-lg overflow-hidden flex flex-col hover:border-muted-amber hover:shadow-sm transition-all duration-300">
-                  {isImage && imageUrl ? (
-                    useContain ? (
-                      <div className="relative w-full h-44 bg-[#f6f0e6] flex items-center justify-center p-4 border-b border-stone-beige/60">
-                        <img
-                          src={imageUrl}
-                          alt={ma.alt_text || ma.title}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                    ) : (
-                      <div className="relative w-full h-44 bg-[#f6f0e6] overflow-hidden border-b border-stone-beige/60">
-                        <img
-                          src={imageUrl}
-                          alt={ma.alt_text || ma.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )
-                  ) : (
-                    <div className="relative w-full h-44 bg-[#f6f0e6] flex flex-col items-center justify-center p-6 border-b border-stone-beige/60 text-stone-400 gap-2">
-                      <svg className="w-10 h-10 text-stone-400/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-stone-500">
-                        {formatAssetType(ma.asset_type)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="p-4 flex flex-col flex-grow gap-2">
-                    <span className="text-[8px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 tracking-wider uppercase self-start">
-                      {formatAssetType(ma.asset_type)}
-                    </span>
-                    <h3 className="font-serif font-bold text-charcoal text-base line-clamp-2 leading-snug">{ma.title}</h3>
-                    {ma.credit && (
-                      <span className="text-[10px] text-stone-500 mt-auto pt-2 border-t border-stone-beige/50 italic">
-                        Crédito: {ma.credit}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* F. RED FEDERAL PARTICIPANTE */}
-      {activeInstitutions.length > 0 && (
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
-          <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
-            <h2 className="text-2xl font-serif font-black text-charcoal">
-              Red federal participante
-            </h2>
-            <Link href="/instituciones" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
-              Ver todas &rarr;
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeInstitutions.map((inst) => (
-              <div key={inst.slug} className="p-5 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-2.5 hover:border-muted-amber hover:shadow-sm transition-colors duration-200">
-                <div className="flex justify-between items-start gap-2">
-                  <h3 className="font-serif font-bold text-charcoal text-base hover:text-earth-red transition-colors">
-                    <Link href={`/instituciones/${inst.slug}`}>
-                      {inst.name}
-                    </Link>
-                  </h3>
-                  {inst.is_featured && (
-                    <span className="text-[10px] bg-muted-amber/10 text-amber-900 border border-muted-amber/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
-                      Destacada
-                    </span>
-                  )}
-                </div>
-                <span className="text-[9px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 self-start tracking-wider uppercase">
-                  {formatInstitutionType(inst.institution_type)}
-                </span>
-                {inst.description && (
-                  <p className="text-xs text-stone-700 leading-relaxed line-clamp-2">{inst.description}</p>
-                )}
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {activeMediaAssets.map((asset) => (
+              <ArchiveAssetCard
+                key={`${asset.bucket_name}/${asset.storage_path}`}
+                asset={asset}
+              />
             ))}
           </div>
         </section>
       )}
 
-      {/* G. RECONOCIMIENTOS */}
+      {/* E.3 AVALES Y RECONOCIMIENTOS */}
       {publicRecognitions.length > 0 && (
         <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-6">
           <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
-            <h2 className="text-lg font-serif font-black text-charcoal">
-              Trayectoria y Avales
+            <h2 className="text-xl font-serif font-black text-charcoal">
+              Trayectoria y Reconocimientos
             </h2>
-            <Link href="/reconocimientos" className="text-[10px] font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
+            <Link href="/reconocimientos" className="text-xs font-bold text-earth-red hover:underline font-mono uppercase tracking-wider">
               Ver todos &rarr;
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {publicRecognitions.map((r) => (
-              <div key={r.slug} className="p-4 bg-[#fcf8f2]/60 border border-stone-beige/80 rounded-lg flex flex-col gap-2 hover:border-muted-amber transition-colors duration-200 justify-between">
-                <div className="flex flex-col gap-1.5">
-                  <h3 className="font-serif font-bold text-charcoal text-xs hover:text-earth-red transition-colors line-clamp-2">
-                    <Link href={`/reconocimientos/${r.slug}`}>
-                      {r.title}
-                    </Link>
-                  </h3>
-                  <span className="text-[8px] font-bold text-earth-red bg-earth-red/5 px-1.5 py-0.5 rounded border border-earth-red/10 self-start tracking-wider uppercase">
-                    {r.recognition_type}
-                  </span>
-                  {r.description && (
-                    <p className="text-[11px] text-stone-650 leading-relaxed line-clamp-3">{r.description}</p>
-                  )}
-                </div>
-                {r.recognition_date && (
-                  <span className="text-[9px] text-stone-500 font-mono mt-2 pt-1 flex items-center gap-1 border-t border-stone-beige/40">
-                    Fecha: {new Date(r.recognition_date).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
+              <RecognitionCard key={r.slug} recognition={r} />
             ))}
           </div>
         </section>
       )}
 
-      {/* Cierre Institucional */}
-      <section className="bg-warm-white border border-stone-beige rounded-lg p-8 md:p-12 text-center flex flex-col items-center gap-6">
-        <div className="flex flex-col gap-2 max-w-xl">
-          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-earth-red">
-            Conexión Federal
+      {/* F. BLOQUE INSTITUCIONAL */}
+      <section className="bg-[#fcf8f2] border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center">
+        <div className="flex-1 flex flex-col gap-4 text-left">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-earth-red font-mono">
+            Portal Cultural Histórico de Argentina
           </span>
-          <h2 className="text-2xl md:text-3xl font-serif font-black text-charcoal">
-            Formar parte de La Gauchita Federal
+          <h2 className="text-3xl font-serif font-black text-charcoal leading-tight">
+            La Gauchita Federal & Instituto Cultural Andino
           </h2>
-          <p className="text-sm text-stone-600 leading-relaxed mt-2">
-            El portal se proyecta como una red de contenidos, personajes, instituciones y archivos que fortalece la memoria cultural de cada comunidad.
+          <p className="text-sm text-stone-700 leading-relaxed font-serif">
+            Un espacio dedicado al resguardo de nuestra memoria y tradiciones. A través de la <strong>Revista La Gauchita</strong>, promovemos la preservación, investigación y difusión de la cultura nacional, conectando las historias y voces de cada rincón de la patria.
           </p>
+          <div className="flex flex-wrap gap-3 mt-2">
+            <Link
+              href="/acerca"
+              className="inline-flex items-center justify-center px-4 py-2 bg-earth-red hover:bg-earth-red/90 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors"
+            >
+              Conocer el proyecto
+            </Link>
+            <Link
+              href="/instituciones"
+              className="inline-flex items-center justify-center px-4 py-2 border border-stone-beige hover:border-earth-red text-stone-700 hover:text-earth-red text-[10px] uppercase font-bold tracking-wider rounded font-mono bg-white transition-all"
+            >
+              Ver instituciones aliadas
+            </Link>
+            <Link
+              href="/revista"
+              className="inline-flex items-center justify-center px-4 py-2 border border-stone-beige hover:border-earth-red text-stone-700 hover:text-earth-red text-[10px] uppercase font-bold tracking-wider rounded font-mono bg-white transition-all"
+            >
+              Archivo de la Revista
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/acerca"
-          className="inline-flex items-center justify-center px-6 py-3 bg-earth-red text-white text-xs uppercase tracking-wider font-bold rounded-md hover:bg-earth-red/90 transition-colors duration-200"
-        >
-          Conocer el proyecto
-        </Link>
+        
+        {/* Editor Showcase using real active institutions */}
+        {activeInstitutions.length > 0 && (
+          <div className="w-full md:w-1/3 flex flex-col gap-3 shrink-0">
+            <span className="text-[9px] font-mono font-bold text-stone-500 uppercase tracking-wider">
+              Institución Editora y Red
+            </span>
+            <div className="flex flex-col gap-3">
+              {activeInstitutions.slice(0, 2).map((inst) => (
+                <div key={inst.slug} className="p-4 bg-white border border-stone-beige rounded-md flex flex-col gap-1.5 shadow-sm">
+                  <h4 className="font-serif font-bold text-charcoal text-xs hover:text-earth-red transition-colors">
+                    <Link href={`/instituciones/${inst.slug}`}>{inst.name}</Link>
+                  </h4>
+                  <span className="text-[8px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 self-start tracking-wider uppercase font-mono">
+                    {formatInstitutionType(inst.institution_type)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
+
     </PublicPageShell>
   );
 }

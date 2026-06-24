@@ -95,6 +95,13 @@ export default function AdminShell({ children }: AdminShellProps) {
           </Link>
 
           <Link
+            href="/admin/portada"
+            className="flex items-center px-4 py-2.5 rounded-md text-xs uppercase tracking-wider font-bold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors duration-200"
+          >
+            Portada editorial
+          </Link>
+
+          <Link
             href="/admin/asignaciones"
             className="flex items-center px-4 py-2.5 rounded-md text-xs uppercase tracking-wider font-bold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors duration-200"
           >

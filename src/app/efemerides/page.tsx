@@ -11,6 +11,8 @@ import {
 import { getRegions, getProvinces, getMunicipalities } from '../../lib/catalogs/catalogs';
 import { formatHistoricalDate, getEphemerisLabel, parseEventDate } from '../../lib/utils/date';
 import PublicPageShell from '../../components/public/PublicPageShell';
+import ContentCard from '../../components/cards/ContentCard';
+import { stripHtml } from '../../lib/utils/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,6 +93,8 @@ export default async function EfemeridesPage({ searchParams }: EfemeridesPagePro
   // 5. Paginate/Slice list (between 6 and 12 results)
   const archiveEphemerides = ephemerides.slice(0, 12);
 
+  const cleanPrincipalSummary = principalEphemeris?.summary ? stripHtml(principalEphemeris.summary) : '';
+
   return (
     <PublicPageShell maxWidth="max-w-4xl">
       <div className="flex flex-col gap-8">
@@ -142,9 +146,9 @@ export default async function EfemeridesPage({ searchParams }: EfemeridesPagePro
               </span>
             </div>
 
-            {principalEphemeris.summary && (
+            {cleanPrincipalSummary && (
               <p className="text-sm text-stone-700 leading-relaxed font-serif">
-                {principalEphemeris.summary}
+                {cleanPrincipalSummary}
               </p>
             )}
 
@@ -205,38 +209,11 @@ export default async function EfemeridesPage({ searchParams }: EfemeridesPagePro
               {archiveEphemerides.map((e) => {
                 const tLabel = getContentTerritoryLabel(e, regions, provinces, municipalities);
                 return (
-                  <div key={e.slug} className="p-5 bg-[#fcf8f2] border border-stone-beige rounded-lg flex flex-col gap-3 hover:border-muted-amber hover:shadow-sm transition-all duration-200 justify-between">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[9px] font-mono text-stone-500 font-bold uppercase tracking-wider">
-                          {formatHistoricalDate(e.event_date)}
-                        </span>
-                        {tLabel && (
-                          <span className="text-[9px] font-mono text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/60 uppercase">
-                            📍 {tLabel}
-                          </span>
-                        )}
-                      </div>
-
-                      <h3 className="font-serif font-bold text-base text-charcoal hover:text-earth-red transition-colors leading-snug line-clamp-2">
-                        <Link href={`/contenidos/${e.slug}`}>
-                          {e.title}
-                        </Link>
-                      </h3>
-
-                      {e.summary && (
-                        <p className="text-xs text-stone-700 leading-relaxed line-clamp-3 font-serif">
-                          {e.summary}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="pt-3 border-t border-stone-beige/50 mt-2 flex justify-end">
-                      <Link href={`/contenidos/${e.slug}`} className="text-[9px] font-mono font-bold text-earth-red hover:underline uppercase tracking-wider">
-                        Leer historia &rarr;
-                      </Link>
-                    </div>
-                  </div>
+                  <ContentCard
+                    key={e.slug}
+                    content={e}
+                    territoryLabel={tLabel}
+                  />
                 );
               })}
             </div>
