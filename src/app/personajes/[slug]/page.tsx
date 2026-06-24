@@ -26,9 +26,31 @@ export async function generateMetadata({ params }: PersonajeDetailPageProps): Pr
     };
   }
 
+  const imageUrl = person.media_assets
+    ? getPublicMediaUrl(person.media_assets.bucket_name, person.media_assets.storage_path)
+    : undefined;
+
+  const cleanDescription = person.short_bio ? person.short_bio.replace(/<[^>]*>/g, '') : `Perfil y biografía de ${person.full_name}.`;
+
   return {
     title: `${person.full_name} | La Gauchita Federal`,
-    description: person.short_bio || `Perfil y biografía de ${person.full_name}.`,
+    description: cleanDescription,
+    alternates: {
+      canonical: `/personajes/${slug}`,
+    },
+    openGraph: {
+      title: person.full_name,
+      description: cleanDescription,
+      type: 'profile',
+      url: `/personajes/${slug}`,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: person.full_name,
+      description: cleanDescription,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
   };
 }
 

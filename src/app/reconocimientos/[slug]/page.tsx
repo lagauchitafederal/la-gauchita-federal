@@ -18,9 +18,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const cleanDescription = r.description ? r.description.replace(/<[^>]*>/g, '') : undefined;
+
   return {
     title: r.title,
-    description: r.description || undefined,
+    description: cleanDescription,
+    alternates: {
+      canonical: `/reconocimientos/${slug}`,
+    },
+    openGraph: {
+      title: r.title,
+      description: cleanDescription,
+      type: 'website',
+      url: `/reconocimientos/${slug}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: r.title,
+      description: cleanDescription,
+    },
   };
 }
 

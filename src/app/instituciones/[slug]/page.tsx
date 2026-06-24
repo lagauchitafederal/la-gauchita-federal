@@ -21,9 +21,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const cleanDescription = inst.description ? inst.description.replace(/<[^>]*>/g, '') : undefined;
+  const imageUrl = inst.logo_url || undefined;
+
   return {
     title: inst.name,
-    description: inst.description || undefined,
+    description: cleanDescription,
+    alternates: {
+      canonical: `/instituciones/${slug}`,
+    },
+    openGraph: {
+      title: inst.name,
+      description: cleanDescription,
+      type: 'website',
+      url: `/instituciones/${slug}`,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: inst.name,
+      description: cleanDescription,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
   };
 }
 

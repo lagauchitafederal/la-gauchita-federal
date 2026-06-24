@@ -5,6 +5,10 @@ import LoginForm from '../../components/auth/LoginForm';
 export const metadata: Metadata = {
   title: 'Iniciar Sesión',
   description: 'Acceso administrativo para La Gauchita Federal',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function LoginPage() {

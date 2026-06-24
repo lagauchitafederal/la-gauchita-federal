@@ -5,6 +5,10 @@ import RecoverPasswordForm from '../../components/auth/RecoverPasswordForm';
 export const metadata: Metadata = {
   title: 'Recuperar Contraseña',
   description: 'Solicitud de recuperación de credenciales para La Gauchita Federal',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RecoverPasswordPage() {

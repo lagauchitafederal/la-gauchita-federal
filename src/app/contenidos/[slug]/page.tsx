@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { getPublishedContentBySlug } from '../../../lib/public-content/public-content';
 import PublicPageShell from '../../../components/public/PublicPageShell';
 import type { Metadata } from 'next';
+import { createServerSupabaseClient } from '../../../lib/supabase/server';
+import { getPublicMediaUrl } from '../../../lib/utils/media-url';
 import { formatHistoricalDate, parseEventDate, getCurrentArgentinaDate } from '../../../lib/utils/date';
 import { getPublicEditorialRelations } from '../../../lib/public-content/public-editorial-relations';
 import PublicEditorialRelations from '../../../components/public/PublicEditorialRelations';
@@ -21,9 +23,62 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  // Resolve cover image from editorial relations
+  let imageUrl: string | undefined = undefined;
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data: rels } = await supabase
+      .from('editorial_relations')
+      .select('target_entity_id')
+      .eq('source_entity_type', 'content')
+      .eq('source_entity_id', content.id)
+      .eq('target_entity_type', 'media_asset');
+
+    if (rels && rels.length > 0) {
+      const assetIds = rels.map((r: any) => r.target_entity_id);
+      const { data: assets } = await supabase
+        .from('media_assets')
+        .select('bucket_name, storage_path, asset_type')
+        .in('id', assetIds)
+        .eq('status', 'active')
+        .eq('visibility', 'public');
+
+      if (assets && assets.length > 0) {
+        const imageAsset = assets.find((a: any) =>
+          ['cover_image', 'content_image', 'gallery_image', 'historical_photo'].includes(a.asset_type)
+        ) || assets[0];
+        imageUrl = getPublicMediaUrl(imageAsset.bucket_name, imageAsset.storage_path);
+      }
+    }
+  } catch (e) {
+    console.error('Error resolving metadata image:', e);
+  }
+
+  const cleanDescription = content.summary ? content.summary.replace(/<[^>]*>/g, '') : (content.subtitle || undefined);
+
   return {
     title: content.title,
-    description: content.summary || content.subtitle || undefined,
+    description: cleanDescription,
+    alternates: {
+      canonical: `/contenidos/${slug}`,
+    },
+    openGraph: {
+      title: content.title,
+      description: cleanDescription,
+      type: 'article',
+      url: `/contenidos/${slug}`,
+      publishedTime: content.publish_date || undefined,
+      modifiedTime: content.created_at || undefined,
+      section: content.categories?.name || undefined,
+      authors: content.institutions?.name ? [content.institutions.name] : undefined,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: content.title,
+      description: cleanDescription,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
   };
 }
 

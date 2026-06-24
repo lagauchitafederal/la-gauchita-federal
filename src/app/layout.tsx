@@ -12,7 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "La Gauchita Federal",
     template: "%s | La Gauchita Federal",
@@ -24,6 +27,11 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_AR",
     siteName: "La Gauchita Federal",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "La Gauchita Federal",
+    description: "Portal federal de historia, cultura, instituciones, reconocimientos y archivo del patrimonio cultural argentino.",
   },
 };
 

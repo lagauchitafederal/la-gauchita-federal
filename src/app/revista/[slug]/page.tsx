@@ -40,9 +40,29 @@ export async function generateMetadata({ params }: MagazineDetailPageProps): Pro
     seoDesc = seoDesc.substring(0, 157) + '...';
   }
 
+  const imageUrl = edition.media_assets
+    ? getPublicMediaUrl(edition.media_assets.bucket_name, edition.media_assets.storage_path)
+    : undefined;
+
   return {
     title: `${edition.title} | Revista La Gauchita`,
     description: seoDesc,
+    alternates: {
+      canonical: `/revista/${slug}`,
+    },
+    openGraph: {
+      title: `${edition.title} | Revista La Gauchita`,
+      description: seoDesc,
+      type: 'website',
+      url: `/revista/${slug}`,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${edition.title} | Revista La Gauchita`,
+      description: seoDesc,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
   };
 }
 

@@ -5,6 +5,10 @@ import ResetPasswordForm from '../../components/auth/ResetPasswordForm';
 export const metadata: Metadata = {
   title: 'Restablecer Contraseña',
   description: 'Establecimiento de una nueva contraseña para La Gauchita Federal',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function ResetPasswordPage() {

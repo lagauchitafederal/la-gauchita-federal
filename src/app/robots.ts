@@ -7,6 +7,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow: [
+        '/admin',
+        '/admin/',
+        '/buscar',
+        '/login',
+        '/recuperar-contrasena',
+        '/restablecer-contrasena'
+      ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };

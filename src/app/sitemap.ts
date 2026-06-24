@@ -4,6 +4,8 @@ import {
   getActiveInstitutionsList,
   getActiveRecognitionsList
 } from '../lib/public-content/public-content';
+import { getPublishedPeople } from '../lib/public-content/public-people';
+import { getPublishedMagazines } from '../lib/public-content/public-magazines';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -17,9 +19,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
+      url: `${siteUrl}/acerca`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
       url: `${siteUrl}/contenidos`,
       lastModified: new Date(),
       changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/efemerides`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/personajes`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
@@ -35,16 +55,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${siteUrl}/revista`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
       url: `${siteUrl}/archivo`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.6,
     },
     {
-      url: `${siteUrl}/acerca`,
+      url: `${siteUrl}/hoy`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
+      changeFrequency: 'daily',
+      priority: 0.8,
     },
   ];
 
@@ -54,12 +80,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const contents = await getPublishedContentsList();
     contentRoutes = contents.map((c) => ({
       url: `${siteUrl}/contenidos/${c.slug}`,
-      lastModified: c.publish_date ? new Date(c.publish_date) : new Date(c.created_at),
+      lastModified: c.publish_date ? new Date(c.publish_date) : (c.created_at ? new Date(c.created_at) : new Date()),
       changeFrequency: 'monthly',
       priority: 0.6,
     }));
   } catch (e) {
     console.error('Error generating sitemap content routes:', e);
+  }
+
+  // Dynamic people sitemap
+  let personRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const people = await getPublishedPeople();
+    personRoutes = people.map((p) => ({
+      url: `${siteUrl}/personajes/${p.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }));
+  } catch (e) {
+    console.error('Error generating sitemap person routes:', e);
   }
 
   // Dynamic institutions sitemap
@@ -90,10 +130,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error generating sitemap recognition routes:', e);
   }
 
+  // Dynamic magazines sitemap
+  let magazineRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const magazines = await getPublishedMagazines();
+    magazineRoutes = magazines.map((m) => ({
+      url: `${siteUrl}/revista/${m.slug}`,
+      lastModified: m.publication_date ? new Date(m.publication_date + 'T00:00:00') : new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }));
+  } catch (e) {
+    console.error('Error generating sitemap magazine routes:', e);
+  }
+
   return [
     ...staticRoutes,
     ...contentRoutes,
+    ...personRoutes,
     ...institutionRoutes,
     ...recognitionRoutes,
+    ...magazineRoutes,
   ];
 }
