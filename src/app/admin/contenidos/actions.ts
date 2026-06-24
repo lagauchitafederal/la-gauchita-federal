@@ -4,6 +4,7 @@ import { updateAdminContent, createAdminContent, getAdminContentById } from '../
 import { revalidatePath } from 'next/cache';
 import { generateSlug, getUniqueSlug } from '../../../lib/admin/slug-utils';
 import { logAdminActivity } from '../../../lib/admin/admin-activity';
+import { createContentSnapshot, restoreContentVersion } from '../../../lib/admin/admin-content-versions';
 import { createClient } from '@supabase/supabase-js';
 import { getEnv } from '../../../lib/supabase/env';
 import { cookies } from 'next/headers';
@@ -19,9 +20,14 @@ export async function updateContentAction(
     source_reference: string | null;
     status: string;
     visibility: string;
+    publish_date?: string | null; // Allow publish_date editing
+    is_featured?: boolean; // Allow is_featured editing
   }
 ) {
   const prevContent = await getAdminContentById(id);
+
+  // Before updating, create a snapshot of the previous state
+  await createContentSnapshot(id, 'Historial: Modificación del contenido');
 
   const result = await updateAdminContent(id, updatedData);
   if (result.success) {
@@ -53,6 +59,8 @@ export async function createContentAction(
     content_type_id: string;
     category_id: string | null;
     is_featured: boolean;
+    publish_date?: string | null;
+    visibility?: string;
   }
 ) {
   try {
@@ -88,6 +96,11 @@ export async function createContentAction(
         console.error('Error fetching created content ID for activity log:', err);
       }
 
+      if (createdId) {
+        // Record version 1 on content creation
+        await createContentSnapshot(createdId, 'Versión inicial (v1)');
+      }
+
       await logAdminActivity({
         action_type: 'create',
         entity_type: 'content',
@@ -104,5 +117,14 @@ export async function createContentAction(
     console.error('Error in createContentAction:', err);
     return { success: false, error: err.message || 'Ocurrió un error inesperado al procesar el slug.' };
   }
+}
+
+export async function restoreContentVersionAction(versionId: string, contentId: string) {
+  const result = await restoreContentVersion(versionId);
+  if (result.success) {
+    revalidatePath('/admin/contenidos');
+    revalidatePath(`/admin/contenidos/${contentId}/editar`);
+  }
+  return result;
 }
 

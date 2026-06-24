@@ -86,6 +86,8 @@ export interface AdminContentDetail {
   source_reference: string | null;
   status: string;
   visibility: string;
+  publish_date: string | null;
+  is_featured: boolean;
 }
 
 /**
@@ -110,7 +112,7 @@ export async function getAdminContentById(id: string): Promise<AdminContentDetai
 
     const { data, error } = await supabase
       .from('contents')
-      .select('id, title, slug, subtitle, summary, body, event_date, source_reference, status, visibility')
+      .select('id, title, slug, subtitle, summary, body, event_date, source_reference, status, visibility, publish_date, is_featured')
       .eq('id', id)
       .maybeSingle();
 

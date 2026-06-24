@@ -4,6 +4,7 @@ import AdminShell from '../../../../../components/admin/AdminShell';
 import AdminSectionHeader from '../../../../../components/admin/AdminSectionHeader';
 import EditContentForm from '../../../../../components/admin/content/EditContentForm';
 import { getAdminContentById } from '../../../../../lib/admin/admin-content';
+import { getContentVersions } from '../../../../../lib/admin/admin-content-versions';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -21,10 +22,14 @@ export default async function EditContenidoPage({ params }: EditPageProps) {
   const { id } = await params;
   
   let content = null;
+  let versions: any[] = [];
   let isError = false;
 
   try {
     content = await getAdminContentById(id);
+    if (content) {
+      versions = await getContentVersions(id);
+    }
   } catch (error) {
     isError = true;
   }
@@ -66,7 +71,7 @@ export default async function EditContenidoPage({ params }: EditPageProps) {
           </Link>
         </div>
       ) : (
-        <EditContentForm content={content} />
+        <EditContentForm content={content} versions={versions} />
       )}
 
     </AdminShell>
