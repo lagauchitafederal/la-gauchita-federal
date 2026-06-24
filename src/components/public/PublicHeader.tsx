@@ -5,6 +5,7 @@ import { parseTerritoryCookie } from '../../lib/utils/territory';
 
 const publicLinks = [
   { href: '/', label: 'Inicio' },
+  { href: '/buscar', label: 'Buscar' },
   { href: '/hoy', label: 'Hoy en Argentina' },
   { href: '/contenidos', label: 'Historias y cultura' },
   { href: '/efemerides', label: 'Efemérides' },
