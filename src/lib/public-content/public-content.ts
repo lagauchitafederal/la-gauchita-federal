@@ -148,7 +148,7 @@ export async function getPublishedContentsList(territory?: SelectedTerritory): P
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('contents')
-      .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name)')
+      .select('id, title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
       .order('is_featured', { ascending: false })
       .order('publish_date', { ascending: false })
       .limit(100);
@@ -159,6 +159,7 @@ export async function getPublishedContentsList(territory?: SelectedTerritory): P
     }
 
     let mapped = (data || []).map((item: any) => ({
+      id: item.id,
       title: item.title,
       slug: item.slug,
       subtitle: item.subtitle,
@@ -171,7 +172,8 @@ export async function getPublishedContentsList(territory?: SelectedTerritory): P
       province_id: item.province_id,
       municipality_id: item.municipality_id,
       institutions: Array.isArray(item.institutions) ? item.institutions[0] || null : item.institutions || null,
-      categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null
+      categories: Array.isArray(item.categories) ? item.categories[0] || null : item.categories || null,
+      content_types: Array.isArray(item.content_types) ? item.content_types[0] || null : item.content_types || null
     })) as PublicContent[];
 
     if (territory) {
