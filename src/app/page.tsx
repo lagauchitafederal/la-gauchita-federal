@@ -440,6 +440,22 @@ export default async function Home() {
                     </div>
                   </div>
                 )}
+
+                {/* Compact Hoy en Argentina CTA */}
+                <div className="mt-2 pt-4 border-t border-stone-beige/65 flex flex-col gap-2 bg-stone-beige/10 p-3 rounded border border-stone-beige/30">
+                  <span className="text-[9px] font-bold text-stone-550 uppercase tracking-widest font-mono">
+                    Hoy en Argentina
+                  </span>
+                  <p className="text-[11px] text-stone-600 leading-normal font-serif">
+                    Acontecimientos, conmemoraciones de próceres y la agenda cultural federal programada para el día de la fecha.
+                  </p>
+                  <Link
+                    href="/hoy"
+                    className="text-[10px] font-bold text-earth-red hover:underline uppercase tracking-wider font-mono self-start mt-0.5"
+                  >
+                    Explorar el día &rarr;
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="text-center py-6 my-auto">
