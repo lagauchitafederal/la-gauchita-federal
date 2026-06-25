@@ -460,12 +460,20 @@ export default async function Home() {
                   <p className="text-[11px] text-stone-600 leading-normal font-serif">
                     Acontecimientos, conmemoraciones de próceres y la agenda cultural federal programada para el día de la fecha.
                   </p>
-                  <Link
-                    href="/hoy"
-                    className="text-[10px] font-bold text-earth-red hover:underline uppercase tracking-wider font-mono self-start mt-0.5"
-                  >
-                    Explorar el día &rarr;
-                  </Link>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-beige/40 pt-2.5 mt-1">
+                    <Link
+                      href="/hoy"
+                      className="text-[10px] font-bold text-earth-red hover:underline uppercase tracking-wider font-mono"
+                    >
+                      Explorar el día &rarr;
+                    </Link>
+                    <Link
+                      href="/agenda"
+                      className="text-[10px] font-bold text-stone-600 hover:underline uppercase tracking-wider font-mono"
+                    >
+                      Ver agenda completa &rarr;
+                    </Link>
+                  </div>
                 </div>
               </div>
             ) : (

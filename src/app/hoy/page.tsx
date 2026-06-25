@@ -328,6 +328,14 @@ export default async function HoyEnArgentinaPage() {
                       );
                     })}
                   </div>
+                  <div className="pt-2 border-t border-stone-beige/40 flex justify-end">
+                    <Link
+                      href="/agenda"
+                      className="text-[10px] font-mono font-bold text-earth-red hover:underline uppercase tracking-wider"
+                    >
+                      Ver agenda completa &rarr;
+                    </Link>
+                  </div>
                 </section>
               )}
 
