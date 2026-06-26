@@ -93,12 +93,18 @@ export default async function AdminEphemeridesPage({ searchParams }: AdminEpheme
           description="Gestión de hitos históricos, efemérides y tradiciones vinculadas a fechas y territorios."
           inPreparation={false}
         />
-        <div className="flex justify-start">
+        <div className="flex justify-start gap-3">
           <Link
             href="/admin/efemerides/nuevo"
             className="inline-flex items-center justify-center px-4 py-2.5 bg-earth-red text-white text-xs font-bold uppercase tracking-wider rounded-md hover:bg-earth-red/90 transition-colors duration-200 font-mono shadow-sm"
           >
-            NUEVA EFEMÉRIDE
+            NUEVA EFEM\u00c9RIDE
+          </Link>
+          <Link
+            href="/admin/efemerides/importar"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-white border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200 font-mono shadow-sm"
+          >
+            IMPORTAR CSV
           </Link>
         </div>
       </div>
