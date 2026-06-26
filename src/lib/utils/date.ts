@@ -109,3 +109,53 @@ export function formatHistoricalDate(eventDateStr: string | null): string {
   }
   return `${day} de ${monthName}`;
 }
+
+export interface DateValidationResult {
+  isValid: boolean;
+  error?: string;
+  parts?: { year: number; month: number; day: number };
+}
+
+/**
+ * Validates a historical date in YYYY-MM-DD format strictly without timezone shifts.
+ * Ensures the date is a valid calendar date, handling leap years.
+ * Note: The 0001 to 9999 year range is documented as a policy limit of the initial import format.
+ */
+export function validateHistoricalDate(dateStr: string | null | undefined): DateValidationResult {
+  if (!dateStr) {
+    return { isValid: false, error: 'La fecha es obligatoria.' };
+  }
+  
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(dateStr)) {
+    return { isValid: false, error: 'El formato de fecha debe ser YYYY-MM-DD.' };
+  }
+  
+  const parts = dateStr.split('-');
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  const day = parseInt(parts[2], 10);
+  
+  if (isNaN(year) || year < 1 || year > 9999) {
+    return { isValid: false, error: 'El a\u00f1o debe estar entre 0001 y 9999.' };
+  }
+  
+  if (isNaN(month) || month < 1 || month > 12) {
+    return { isValid: false, error: 'El mes debe estar entre 01 y 12.' };
+  }
+  
+  const isLeapYear = (y: number) => (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+  const daysInMonths = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const maxDays = daysInMonths[month - 1];
+  
+  if (isNaN(day) || day < 1 || day > maxDays) {
+    return { isValid: false, error: `El d\u00eda no es v\u00e1lido para el mes especificado (m\u00e1ximo ${maxDays} d\u00edas).` };
+  }
+  
+  return {
+    isValid: true,
+    parts: { year, month, day }
+  };
+}
+
+

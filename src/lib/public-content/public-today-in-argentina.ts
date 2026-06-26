@@ -20,14 +20,16 @@ export interface TodayInArgentinaData {
 export async function getTodayInArgentinaData(territory?: SelectedTerritory): Promise<TodayInArgentinaData> {
   try {
     const supabase = createServerSupabaseClient();
-    const { year: currentYear } = getArgentinaDateParts();
+    const { year: currentYear, month: todayMonthIndex, day: todayDay } = getArgentinaDateParts();
+    const todayMonthDay = (todayMonthIndex + 1) * 100 + todayDay;
 
-    // 1. Fetch Today's Ephemerides
+    // 1. Fetch Today's Ephemerides using optimized contents table filter
     const { data: contentsData, error: contentsError } = await supabase
       .from('contents')
       .select('id, title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
       .eq('status', 'published')
-      .eq('visibility', 'public');
+      .eq('visibility', 'public')
+      .eq('event_month_day', todayMonthDay);
 
     if (contentsError) {
       console.error('Error fetching contents for Today in Argentina:', contentsError);

@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '../supabase/server';
-import { isEventToday } from '../utils/date';
+import { isEventToday, getArgentinaDateParts } from '../utils/date';
 import { getRelevanceScore } from './relevance';
 
 import { SelectedTerritory, sortPublicContentByRelevance, sortPublicInstitutionsByRelevance } from './relevance';
@@ -452,12 +452,15 @@ export async function getPublicMediaAssetsList(): Promise<PublicMediaAssetDetail
 export async function getTodayEphemerides(territory?: SelectedTerritory): Promise<PublicContent[]> {
   try {
     const supabase = createServerSupabaseClient();
+    const { day: todayDay, month: todayMonthIndex } = getArgentinaDateParts();
+    const todayMonthDay = (todayMonthIndex + 1) * 100 + todayDay;
+
     const { data, error } = await supabase
       .from('contents')
       .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
       .eq('status', 'published')
       .eq('visibility', 'public')
-      .not('event_date', 'is', null)
+      .eq('event_month_day', todayMonthDay)
       .order('is_featured', { ascending: false })
       .order('publish_date', { ascending: false });
 
