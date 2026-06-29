@@ -2,7 +2,7 @@
 
 import { parseCsv, mapHeaders } from '../../../../lib/admin/ephemerides-import/csv-parser';
 import { validateEphemeridesImport, RowValidationResult } from '../../../../lib/admin/ephemerides-import/import-validator';
-import { createServerSupabaseClient } from '../../../../lib/supabase/server';
+import { createAuthenticatedServerSupabaseClient } from '../../../../lib/supabase/server';
 import { logAdminActivity } from '../../../../lib/admin/admin-activity';
 import crypto from 'crypto';
 
@@ -195,8 +195,14 @@ export async function saveEphemeridesImportBatchAction(
       return { success: false, error: validation.error || 'Ocurrió un error inesperado al guardar el lote de importación.' };
     }
 
-    // 2. Initialize authenticated Supabase client using server-side project pattern
-    const supabase = createServerSupabaseClient();
+    // 2. Initialize authenticated Supabase client using server-side project helper
+    let supabase;
+    try {
+      const clientInfo = await createAuthenticatedServerSupabaseClient();
+      supabase = clientInfo.supabase;
+    } catch (err: any) {
+      return { success: false, error: 'No autorizado: sesión no válida.' };
+    }
 
     // 3. Authenticate User and verify active profile
     const { data: { user }, error: authError } = await supabase.auth.getUser();
