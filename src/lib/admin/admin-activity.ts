@@ -4,7 +4,7 @@ import { getEnv } from '../supabase/env';
 
 export interface LogActivityParams {
   action_type: 'create' | 'update' | 'upload';
-  entity_type: 'content' | 'institution' | 'recognition' | 'media_asset';
+  entity_type: 'content' | 'institution' | 'recognition' | 'media_asset' | 'import_batch';
   entity_id: string | null;
   entity_label: string | null;
   metadata?: Record<string, any>;

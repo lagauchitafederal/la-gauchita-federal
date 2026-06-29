@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useRef } from 'react';
-import { validateEphemeridesCsvAction, ValidateCsvResponse } from '../../../app/admin/efemerides/importar/actions';
+import { validateEphemeridesCsvAction, saveEphemeridesImportBatchAction, ValidateCsvResponse } from '../../../app/admin/efemerides/importar/actions';
 import { RowValidationResult } from '../../../lib/admin/ephemerides-import/import-validator';
 
 export default function ImportEphemeridesForm() {
@@ -10,6 +10,13 @@ export default function ImportEphemeridesForm() {
   const [validationResult, setValidationResult] = useState<ValidateCsvResponse | null>(null);
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Batch saving state
+  const [batchName, setBatchName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savedBatchId, setSavedBatchId] = useState<string | null>(null);
 
   // Table filter state
   const [activeFilter, setActiveFilter] = useState<'todas' | 'valida' | 'observaciones' | 'duplicados' | 'errores'>('todas');
@@ -87,11 +94,25 @@ export default function ImportEphemeridesForm() {
           const res = await validateEphemeridesCsvAction(text);
           if (res.success) {
             setValidationResult(res);
+            if (file) {
+              const baseName = file.name.replace(/\.[^/.]+$/, "");
+              const dateStr = new Date().toLocaleDateString('es-AR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              }).replace(/\//g, '-').replace(',', '');
+              setBatchName(`${baseName} (${dateStr})`);
+            }
+            setSaveSuccess(false);
+            setSaveError(null);
+            setSavedBatchId(null);
           } else {
-            setErrorMsg(res.error || 'Ocurri\u00f3 un error en la validaci\u00f3n.');
+            setErrorMsg(res.error || 'Ocurrió un error en la validación.');
           }
         } catch (err: any) {
-          setErrorMsg(err.message || 'Error de conexi\u00f3n al validar el archivo.');
+          setErrorMsg(err.message || 'Error de conexión al validar el archivo.');
         }
       });
     };
@@ -109,8 +130,45 @@ export default function ImportEphemeridesForm() {
     setErrorMsg(null);
     setValidationResult(null);
     setCurrentPage(1);
+    setSaveSuccess(false);
+    setSaveError(null);
+    setSavedBatchId(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  // Handle batch persistence
+  const handleSaveBatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validationResult || !validationResult.results) return;
+
+    if (!batchName.trim()) {
+      setSaveError('Debe ingresar un nombre para el lote.');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      const response = await saveEphemeridesImportBatchAction(
+        batchName,
+        file ? file.name : null,
+        validationResult.results
+      );
+
+      if (response.success) {
+        setSaveSuccess(true);
+        setSavedBatchId(response.batchId || null);
+      } else {
+        setSaveError(response.error || 'Ocurrió un error al guardar el lote.');
+      }
+    } catch (err: any) {
+      setSaveError(err.message || 'Error de conexión al guardar el lote.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -323,6 +381,107 @@ export default function ImportEphemeridesForm() {
                 <span className="text-2xl font-serif font-black text-red-700">{validationResult.summary.errorRows}</span>
               </div>
             </div>
+          </div>
+
+          {/* Batch Saving Block */}
+          <div className="bg-white border border-stone-beige rounded-lg p-6 shadow-sm flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5 border-b border-stone-100 pb-3">
+              <h3 className="text-sm font-serif font-black text-charcoal">
+                Guardar validación de lote
+              </h3>
+              <p className="text-xs text-stone-500 font-mono leading-relaxed">
+                Podés persistir este análisis de validación como un lote de importación auditable en la base de datos para su posterior ejecución o revisión.
+              </p>
+            </div>
+
+            {saveSuccess ? (
+              <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-lg flex flex-col gap-2">
+                <div className="flex gap-2.5 items-start">
+                  <svg className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-bold text-emerald-800 font-mono">¡Validación guardada con éxito!</span>
+                    <p className="text-xs text-emerald-750 font-mono leading-relaxed">
+                      El lote de importación se registró correctamente con el estado <strong className="font-black font-mono">validated</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveBatch} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="batchNameInput" className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono">
+                    Nombre lógico del lote:
+                  </label>
+                  <input
+                    id="batchNameInput"
+                    type="text"
+                    required
+                    value={batchName}
+                    onChange={(e) => setBatchName(e.target.value)}
+                    disabled={isSaving}
+                    placeholder="Ej. Importación efemérides Mayo 1810"
+                    className="w-full max-w-lg px-3 py-2 text-xs border border-stone-300 rounded font-serif text-charcoal focus:outline-none focus:border-earth-red disabled:opacity-60"
+                  />
+                </div>
+
+                {saveError && (
+                  <div className="bg-red-50 border border-red-200 p-3 rounded-lg flex gap-2.5">
+                    <svg className="w-4 h-4 text-red-650 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p className="text-xs text-red-700 font-mono leading-relaxed">{saveError}</p>
+                  </div>
+                )}
+
+                {/* Validation summary list */}
+                <div className="bg-stone-50 border border-stone-200 p-4 rounded-lg flex flex-col gap-2">
+                  <span className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider">Resumen de registros a persistir:</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-1">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[9px] font-mono font-bold text-stone-400 uppercase tracking-wide">Total</span>
+                      <span className="text-sm font-serif font-black text-charcoal">{validationResult.summary.totalRows}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[9px] font-mono font-bold text-stone-400 uppercase tracking-wide">Válidas</span>
+                      <span className="text-sm font-serif font-black text-emerald-700">{validationResult.summary.validRows}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[9px] font-mono font-bold text-stone-400 uppercase tracking-wide">Observaciones</span>
+                      <span className="text-sm font-serif font-black text-amber-700">{validationResult.summary.warningRows}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[9px] font-mono font-bold text-stone-400 uppercase tracking-wide">Duplicados</span>
+                      <span className="text-sm font-serif font-black text-indigo-700">{validationResult.summary.duplicateRows}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[9px] font-mono font-bold text-stone-400 uppercase tracking-wide">Errores</span>
+                      <span className="text-sm font-serif font-black text-red-700">{validationResult.summary.errorRows}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-stone-100 pt-4 mt-1">
+                  <div className="flex items-start gap-2 max-w-xl">
+                    <svg className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-[11px] text-stone-600 font-mono leading-relaxed font-bold">
+                      Este paso guarda la validación editorial del archivo. No incorpora efemérides al catálogo público.
+                    </p>
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:bg-stone-300 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors duration-150 shadow-sm shrink-0 disabled:text-stone-500 disabled:shadow-none"
+                  >
+                    {isSaving ? 'Guardando...' : 'Guardar validación como lote'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
 
           {/* Table Filters and Preview Grid */}
