@@ -378,3 +378,78 @@ export async function saveEphemeridesImportBatchAction(
     };
   }
 }
+
+export interface ExecuteBatchResponse {
+  success: boolean;
+  error?: string;
+  data?: {
+    success: boolean;
+    batch_id: string;
+    status: string;
+    imported_rows: number;
+    skipped_rows: number;
+  };
+}
+
+/**
+ * Next.js Server Action to execute a validated import batch.
+ * Invokes public.execute_ephemerides_import inside PostgreSQL.
+ */
+export async function executeEphemeridesImportAction(batchId: string): Promise<ExecuteBatchResponse> {
+  try {
+    // 1. Revalidate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!batchId || !uuidRegex.test(batchId)) {
+      return { success: false, error: 'Identificador de lote no válido (formato UUID incorrecto).' };
+    }
+
+    // 2. Initialize authenticated Supabase client using server-side helper
+    let supabase;
+    try {
+      const clientObj = await createAuthenticatedServerSupabaseClient();
+      supabase = clientObj.supabase;
+    } catch (authError) {
+      console.error('Auth helper initialization failed:', authError);
+      return { success: false, error: 'No autorizado: sesión no válida.' };
+    }
+
+    // 3. Execute the import process via RPC
+    const { data, error } = await supabase.rpc('execute_ephemerides_import', {
+      p_batch_id: batchId
+    });
+
+    if (error) {
+      console.error('RPC execute_ephemerides_import failed:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Error al ejecutar la importación en la base de datos.' 
+      };
+    }
+
+    // Since RPC returns a JSONB, we cast and verify it
+    const res = data as any;
+    if (!res || !res.success) {
+      return { 
+        success: false, 
+        error: 'La ejecución del lote falló o no devolvió un resultado exitoso.' 
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        success: res.success,
+        batch_id: res.batch_id,
+        status: res.status,
+        imported_rows: res.imported_rows,
+        skipped_rows: res.skipped_rows
+      }
+    };
+  } catch (err: any) {
+    console.error('Error in executeEphemeridesImportAction:', err);
+    return {
+      success: false,
+      error: 'Ocurrió un error inesperado al ejecutar el lote de importación.'
+    };
+  }
+}

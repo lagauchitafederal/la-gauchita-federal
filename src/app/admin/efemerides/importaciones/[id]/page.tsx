@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AdminShell from '../../../../../components/admin/AdminShell';
 import { getImportBatchById, getBatchRows, ImportBatchRow } from '../../../../../lib/admin/admin-import-batches';
+import ExecuteImportBatchPanel from '../../../../../components/admin/content/ExecuteImportBatchPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -139,6 +140,17 @@ export default async function ImportBatchDetailPage({ params, searchParams }: De
           Aviso: Este lote conserva una validación editorial. No se crearon ni publicaron efemérides a partir de estas filas.
         </p>
       </div>
+
+      <ExecuteImportBatchPanel
+        batchId={batch.id}
+        status={batch.status}
+        validRows={batch.valid_rows}
+        warningRows={batch.warning_rows}
+        duplicateRows={batch.duplicate_rows}
+        errorRows={batch.error_rows}
+        importedRows={batch.imported_rows}
+        skippedRows={batch.skipped_rows}
+      />
 
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
