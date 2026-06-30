@@ -453,3 +453,77 @@ export async function executeEphemeridesImportAction(batchId: string): Promise<E
     };
   }
 }
+
+export interface RevertBatchResponse {
+  success: boolean;
+  error?: string;
+  data?: {
+    success: boolean;
+    batch_id: string;
+    status: string;
+    reverted_rows: number;
+    manual_review_rows: number;
+  };
+}
+
+/**
+ * Next.js Server Action to revert an executed import batch.
+ * Invokes public.revert_ephemerides_import inside PostgreSQL.
+ */
+export async function revertEphemeridesImportAction(batchId: string): Promise<RevertBatchResponse> {
+  try {
+    // 1. Revalidate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!batchId || !uuidRegex.test(batchId)) {
+      return { success: false, error: 'Identificador de lote no válido (formato UUID incorrecto).' };
+    }
+
+    // 2. Initialize authenticated Supabase client using server-side helper
+    let supabase;
+    try {
+      const clientObj = await createAuthenticatedServerSupabaseClient();
+      supabase = clientObj.supabase;
+    } catch (authError) {
+      console.error('Auth helper initialization failed:', authError);
+      return { success: false, error: 'No autorizado: sesión no válida.' };
+    }
+
+    // 3. Execute the reversion process via RPC
+    const { data, error } = await supabase.rpc('revert_ephemerides_import', {
+      p_batch_id: batchId
+    });
+
+    if (error) {
+      console.error('RPC revert_ephemerides_import failed:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Error al revertir la importación en la base de datos.' 
+      };
+    }
+
+    const res = data as any;
+    if (!res || !res.success) {
+      return { 
+        success: false, 
+        error: 'La reversión del lote falló o no devolvió un resultado exitoso.' 
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        success: res.success,
+        batch_id: res.batch_id,
+        status: res.status,
+        reverted_rows: res.reverted_rows,
+        manual_review_rows: res.manual_review_rows
+      }
+    };
+  } catch (err: any) {
+    console.error('Error in revertEphemeridesImportAction:', err);
+    return {
+      success: false,
+      error: 'Ocurrió un error inesperado al revertir el lote de importación.'
+    };
+  }
+}

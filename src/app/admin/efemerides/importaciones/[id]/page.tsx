@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import AdminShell from '../../../../../components/admin/AdminShell';
 import { getImportBatchById, getBatchRows, ImportBatchRow } from '../../../../../lib/admin/admin-import-batches';
 import ExecuteImportBatchPanel from '../../../../../components/admin/content/ExecuteImportBatchPanel';
+import RevertImportBatchPanel from '../../../../../components/admin/content/RevertImportBatchPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +18,11 @@ const BATCH_STATUS_LABELS: Record<string, { text: string; classes: string }> = {
   draft_validation: { text: 'Prevalidación', classes: 'bg-stone-100 text-stone-600 border-stone-200/60' },
   validated: { text: 'Validado', classes: 'bg-blue-50 text-blue-700 border-blue-200/60' },
   importing: { text: 'Importando', classes: 'bg-amber-50 text-amber-800 border-amber-200/60' },
-  imported: { text: 'Importado', classes: 'bg-emerald-50 text-emerald-700 border-emerald-200/60' },
+  completed: { text: 'Completado', classes: 'bg-emerald-50 text-emerald-700 border-emerald-200/60' },
+  completed_with_observations: { text: 'Completado con Observaciones', classes: 'bg-emerald-50 text-emerald-700 border-emerald-200/60' },
   failed: { text: 'Fallido', classes: 'bg-red-50 text-red-700 border-red-200/60' },
   reverted: { text: 'Revertido', classes: 'bg-purple-50 text-purple-700 border-purple-200/60' },
+  partially_reverted: { text: 'Revertido Parcialmente', classes: 'bg-purple-50 text-purple-700 border-purple-200/60' },
 };
 
 const ROW_STATUS_LABELS: Record<string, { text: string; classes: string }> = {
@@ -34,6 +37,8 @@ const EXECUTION_STATUS_LABELS: Record<string, { text: string; classes: string }>
   imported: { text: 'Importada', classes: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   skipped: { text: 'Omitida', classes: 'bg-slate-50 text-slate-500 border-slate-200' },
   failed: { text: 'Fallida', classes: 'bg-red-50 text-red-700 border-red-200' },
+  reverted: { text: 'Revertida', classes: 'bg-purple-50 text-purple-700 border-purple-200' },
+  reversal_manual_review: { text: 'Revisión manual', classes: 'bg-amber-50 text-amber-800 border-amber-200/60' },
 };
 
 interface DetailPageProps {
@@ -137,7 +142,11 @@ export default async function ImportBatchDetailPage({ params, searchParams }: De
       {/* Mandatory Notice */}
       <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
         <p className="text-xs text-amber-900 font-bold font-mono">
-          Aviso: Este lote conserva una validación editorial. No se crearon ni publicaron efemérides a partir de estas filas.
+          {batch.status === 'validated' && 'Aviso: Este lote conserva una validación editorial. No se crearon ni publicaron efemérides a partir de estas filas.'}
+          {(batch.status === 'completed' || batch.status === 'completed_with_observations') && 'Aviso: Este lote se ha importado exitosamente. Las efemérides creadas se encuentran en estado borrador.'}
+          {(batch.status === 'reverted' || batch.status === 'partially_reverted') && 'Aviso: Las efemérides de este lote se han archivado lógicamente por reversión.'}
+          {batch.status === 'importing' && 'Aviso: Este lote se está procesando e importando actualmente en la base de datos.'}
+          {batch.status === 'failed' && 'Aviso: La importación de este lote falló durante su procesamiento.'}
         </p>
       </div>
 
@@ -150,6 +159,14 @@ export default async function ImportBatchDetailPage({ params, searchParams }: De
         errorRows={batch.error_rows}
         importedRows={batch.imported_rows}
         skippedRows={batch.skipped_rows}
+      />
+
+      <RevertImportBatchPanel
+        batchId={batch.id}
+        status={batch.status}
+        importedRows={batch.imported_rows}
+        skippedRows={batch.skipped_rows}
+        summaryReport={batch.summary_report}
       />
 
       {/* Metric Cards Grid */}
