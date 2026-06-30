@@ -40,7 +40,7 @@ export default function ImportEphemeridesForm() {
         return;
       }
       if (selectedFile.size > 5 * 1024 * 1024) {
-        setErrorMsg('El archivo supera el l\u00edmite de 5 MB.');
+        setErrorMsg('El archivo supera el límite de 5 MB.');
         setFile(null);
         return;
       }
@@ -69,7 +69,7 @@ export default function ImportEphemeridesForm() {
         return;
       }
       if (droppedFile.size > 5 * 1024 * 1024) {
-        setErrorMsg('El archivo supera el l\u00edmite de 5 MB.');
+        setErrorMsg('El archivo supera el límite de 5 MB.');
         setFile(null);
         return;
       }
@@ -80,7 +80,7 @@ export default function ImportEphemeridesForm() {
   // Trigger validation via Server Action
   const handleValidate = () => {
     if (!file) {
-      setErrorMsg('No se ha seleccionado ning\u00fan archivo.');
+      setErrorMsg('No se ha seleccionado ningún archivo.');
       return;
     }
 
@@ -220,7 +220,7 @@ export default function ImportEphemeridesForm() {
       case 'valida':
         return (
           <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border bg-emerald-50 text-emerald-700 border-emerald-250 font-mono">
-            V\u00e1lida
+            Válida
           </span>
         );
       case 'valida_con_observaciones':
@@ -287,7 +287,7 @@ export default function ImportEphemeridesForm() {
                   onClick={() => fileInputRef.current?.click()}
                   className="text-xs font-bold text-earth-red hover:underline uppercase tracking-wider font-mono"
                 >
-                  Arrastr\u00e1 tu archivo CSV aqu\u00ed o hac\u00e9 clic para seleccionar
+                  Arrastrá tu archivo CSV aquí o hacé clic para seleccionar
                 </button>
                 <p className="text-[10px] text-stone-400 font-mono">
                   Soporta archivos CSV de hasta 5 MB y 1.000 filas.
@@ -347,7 +347,7 @@ export default function ImportEphemeridesForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs font-bold text-red-800 font-mono">Error de validaci\u00f3n:</span>
+            <span className="text-xs font-bold text-red-800 font-mono">Error de validación:</span>
             <p className="text-xs text-red-700 font-mono leading-relaxed">{errorMsg}</p>
           </div>
         </div>
@@ -358,7 +358,7 @@ export default function ImportEphemeridesForm() {
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h2 className="text-xs uppercase font-bold tracking-widest text-stone-500 font-mono">
-              Resumen de Validaci\u00f3n
+              Resumen de Validación
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div className="bg-white border border-stone-beige p-4 rounded-lg shadow-sm flex flex-col gap-1">
@@ -366,7 +366,7 @@ export default function ImportEphemeridesForm() {
                 <span className="text-2xl font-serif font-black text-charcoal">{validationResult.summary.totalRows}</span>
               </div>
               <div className="bg-white border border-stone-beige p-4 rounded-lg shadow-sm border-l-4 border-l-emerald-500 flex flex-col gap-1">
-                <span className="text-[10px] font-mono font-bold text-stone-400 uppercase tracking-wider">V\u00e1lidas</span>
+                <span className="text-[10px] font-mono font-bold text-stone-400 uppercase tracking-wider">Válidas</span>
                 <span className="text-2xl font-serif font-black text-emerald-700">{validationResult.summary.validRows}</span>
               </div>
               <div className="bg-white border border-stone-beige p-4 rounded-lg shadow-sm border-l-4 border-l-amber-500 flex flex-col gap-1">
@@ -520,7 +520,7 @@ export default function ImportEphemeridesForm() {
                   let activeClasses = 'bg-charcoal text-white border-charcoal';
 
                   if (filter === 'valida') {
-                    label = 'V\u00e1lidas';
+                    label = 'Válidas';
                     count = validationResult.summary!.validRows;
                     activeClasses = 'bg-emerald-700 text-white border-emerald-700';
                   } else if (filter === 'observaciones') {
@@ -565,10 +565,10 @@ export default function ImportEphemeridesForm() {
                   <thead className="bg-stone-50 text-stone-500 font-mono border-b border-stone-200 font-bold uppercase tracking-wider">
                     <tr>
                       <th className="p-3 w-16 text-center">Fila</th>
-                      <th className="p-3 min-w-[150px]">T\u00edtulo</th>
+                      <th className="p-3 min-w-[150px]">Título</th>
                       <th className="p-3 w-28">Fecha</th>
                       <th className="p-3 w-32">Territorio</th>
-                      <th className="p-3 w-28">Categor\u00eda</th>
+                      <th className="p-3 w-28">Categoría</th>
                       <th className="p-3 w-40">Slug Propuesto</th>
                       <th className="p-3 w-28">Estado</th>
                       <th className="p-3 min-w-[200px]">Detalle de observaciones / errores</th>
@@ -583,7 +583,7 @@ export default function ImportEphemeridesForm() {
                       </tr>
                     ) : (
                       paginatedRows.map((row) => {
-                        const titleText = row.rawData.title || row.normalizedData?.title || '(Sin t\u00edtulo)';
+                        const titleText = row.rawData.title || row.normalizedData?.title || '(Sin título)';
                         const truncatedTitle = titleText.length > 60 ? `${titleText.substring(0, 57)}...` : titleText;
                         const dateText = row.rawData.date || row.normalizedData?.event_date || '-';
                         const scopeText = row.rawData.scope || row.normalizedData?.province_id || row.normalizedData?.region_id || 'Nacional';
@@ -629,7 +629,7 @@ export default function ImportEphemeridesForm() {
                                 </ul>
                               )}
                               {row.errors.length === 0 && row.warnings.length === 0 && (
-                                <span className="text-emerald-700 font-bold">\u2713 V\u00e1lida</span>
+                                <span className="text-emerald-700 font-bold">✓ Válida</span>
                               )}
                             </td>
                           </tr>
@@ -644,7 +644,7 @@ export default function ImportEphemeridesForm() {
               {totalPages > 1 && (
                 <div className="bg-stone-50 border-t border-stone-200 px-4 py-3 flex items-center justify-between gap-4">
                   <span className="text-[11px] font-mono font-bold text-stone-500">
-                    P\u00e1gina {currentPage} de {totalPages} ({totalRowsCount} filas filtradas)
+                    Página {currentPage} de {totalPages} ({totalRowsCount} filas filtradas)
                   </span>
                   
                   <div className="flex items-center gap-1.5">
@@ -675,7 +675,7 @@ export default function ImportEphemeridesForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-xs text-stone-600 font-mono leading-relaxed font-bold">
-                La importaci\u00f3n definitiva se habilitar\u00e1 luego de confirmar esta validaci\u00f3n editorial.
+                La importación definitiva se habilitará luego de confirmar esta validación editorial.
               </p>
             </div>
           </div>

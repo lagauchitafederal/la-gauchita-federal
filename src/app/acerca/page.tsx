@@ -6,8 +6,11 @@ import { getPublishedPersonBySlug } from '../../lib/public-content/public-people
 import { getAcercaJsonLd } from '../../lib/seo/json-ld';
 
 export const metadata: Metadata = {
-  title: "Acerca de nosotros",
-  description: "Una plataforma cultural para preservar, organizar y difundir la memoria histórica y el patrimonio federal argentino.",
+  title: 'La Gauchita Federal - Institucional',
+  description: 'Conozca La Gauchita Federal, portal de memoria, archivo y patrimonio histórico, continuidad de Revista La Gauchita, Eduardo Ceballos y el Instituto Cultural Andino.',
+  alternates: {
+    canonical: '/acerca',
+  },
 };
 
 export default async function AcercaPage() {
@@ -24,77 +27,81 @@ export default async function AcercaPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       ))}
+      
       <PublicSectionHeader
-        title="Acerca de La Gauchita Federal"
-        description="Una plataforma cultural para preservar, organizar y difundir la memoria histórica y el patrimonio federal argentino."
+        title="La Gauchita Federal"
+        description="Donde late la historia de cada argentino"
       />
 
-      {/* Presentación Institucional Principal */}
-      <div className="flex flex-col gap-8 mt-4">
+      <div className="flex flex-col gap-8 mt-4 font-serif">
         
-        {/* Bloque 1: Qué es La Gauchita Federal */}
-        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-          <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
+        {/* Presentacion Editorial del Proyecto */}
+        <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-4 hover:border-muted-amber transition-colors duration-200">
+          <h2 className="text-xl font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-            Qué es La Gauchita Federal
+            El Banco Cultural de Nuestra Memoria
           </h2>
-          <p className="text-sm text-stone-700 leading-relaxed">
-            La Gauchita Federal es un portal cultural e histórico impulsado por el Instituto Cultural Andino y la Revista La Gauchita, orientado a reunir, preservar y difundir contenidos vinculados a la memoria cultural, histórica y documental del norte argentino y del ámbito federal andino.
+          <p className="text-sm text-stone-750 leading-relaxed font-sans">
+            La Gauchita Federal es una plataforma digital comunitaria, federal y patrimonial concebida como un banco dinámico de historia, cultura y tradiciones. El portal nace con la misión de salvaguardar, organizar y proyectar hacia el futuro el valioso acervo documental, testimonial y artístico del norte argentino y del ámbito federal andino, proporcionando un canal de acceso público, sobrio y riguroso.
           </p>
-          <p className="text-sm text-stone-700 leading-relaxed font-medium italic">
-            La Gauchita Federal busca rescatar el pasado, ordenar la memoria disponible y construir un puente entre archivo, comunidad y futuro.
+          <p className="text-sm text-stone-750 leading-relaxed font-sans">
+            Este proyecto constituye la continuidad digital y el espacio de preservación de la obra de Revista La Gauchita, las recopilaciones de su fundador Eduardo Ceballos y el fondo de fomento cultural del Instituto Cultural Andino.
           </p>
         </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Bloque 2: Qué reúne la plataforma */}
-          <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-            <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-              Qué reúne la plataforma
-            </h2>
-            <p className="text-sm text-stone-700 leading-relaxed">
-              La plataforma integra artículos, efemérides, notas culturales, instituciones participantes o vinculadas al archivo, reconocimientos, materiales documentales e imágenes de valor histórico. Su propósito es ofrecer un espacio digital sobrio, accesible y organizado, donde la trayectoria de La Gauchita y el trabajo cultural de Eduardo Ceballos puedan proyectarse hacia nuevas comunidades, instituciones, docentes, investigadores y lectores interesados en el patrimonio regional.
-            </p>
-          </section>
+        {/* Criterio Central de Navegacion */}
+        <section className="bg-stone-50 border border-stone-200 rounded-lg p-6 sm:p-8 flex flex-col gap-4">
+          <h3 className="text-base font-bold text-charcoal flex items-center gap-2">
+            <svg className="w-4 h-4 text-earth-red shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            Criterio de Experiencia Personalizada
+          </h3>
+          <p className="text-xs text-stone-600 font-sans leading-relaxed">
+            La Gauchita Federal organiza y presenta de forma dinámica su patrimonio a través de tres filtros transversales obligatorios que adaptan el contenido del portal:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs mt-1">
+            <div className="bg-white border border-stone-200 p-4 rounded flex flex-col gap-1">
+              <span className="text-earth-red font-bold uppercase tracking-wider">1. Fecha Actual</span>
+              <span className="text-[11px] text-stone-500">Muestra las efemérides relevantes asociadas al calendario del día.</span>
+            </div>
+            <div className="bg-white border border-stone-200 p-4 rounded flex flex-col gap-1">
+              <span className="text-earth-red font-bold uppercase tracking-wider">2. Territorio</span>
+              <span className="text-[11px] text-stone-500">Filtra la información de acuerdo al alcance seleccionado (nacional, regional, provincial o municipal).</span>
+            </div>
+            <div className="bg-white border border-stone-200 p-4 rounded flex flex-col gap-1">
+              <span className="text-earth-red font-bold uppercase tracking-wider">3. Nivel de Usuario</span>
+              <span className="text-[11px] text-stone-500">Diferencia la experiencia según el rol (público general, colaboradores editoriales o administradores).</span>
+            </div>
+          </div>
+        </section>
 
-          {/* Bloque 3: Una red cultural en construcción */}
-          <section className="bg-warm-white border border-stone-beige rounded-lg p-6 sm:p-8 flex flex-col gap-3.5 hover:border-muted-amber transition-colors duration-200">
-            <h2 className="text-lg font-serif font-bold text-charcoal border-b border-stone-beige/50 pb-2 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-earth-red rounded-full" />
-              Una red cultural en construcción
-            </h2>
-            <p className="text-sm text-stone-700 leading-relaxed">
-              En esta primera etapa, el portal funciona como una versión inicial institucional, con contenidos reales, archivo visual, reconocimientos documentados y navegación pública. A futuro, se proyecta como una red cultural federal abierta a nuevas instituciones, municipios, bibliotecas, museos, escuelas, investigadores y espacios comunitarios que deseen aportar materiales, historias y referencias vinculadas a la identidad cultural de cada territorio.
-            </p>
-          </section>
-        </div>
-
-        {/* Separador de Sección */}
+        {/* Separador de Seccion */}
         <div className="pt-4 pb-2 border-b border-stone-beige/60">
-          <h3 className="text-sm uppercase tracking-[0.2em] font-bold text-stone-500">
-            Los pilares de La Gauchita Federal
+          <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stone-500 font-sans">
+            Los Pilares de Nuestro Legado
           </h3>
         </div>
 
-        {/* Grid de Impulsores */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Instituto Cultural Andino */}
+        {/* Grid de Pilares con enlaces reales */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
+          
+          {/* Eduardo Ceballos */}
           <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col justify-between hover:border-muted-amber hover:shadow-md transition-all duration-300">
             <div className="flex flex-col gap-3">
               <h4 className="font-serif font-bold text-charcoal text-base">
-                Instituto Cultural Andino
+                Eduardo Ceballos
               </h4>
               <p className="text-xs text-stone-700 leading-relaxed">
-                Pilar fundamental en la investigación y promoción de las tradiciones, el folklore y el patrimonio cultural del norte argentino. Colabora activamente en la difusión de materiales y documentos valiosos para docentes, investigadores y estudiantes.
+                Escritor, periodista y promotor cultural, ha dedicado su labor al rescate y resguardo de la identidad federal. Sus valiosas recopilaciones históricas forman parte del núcleo de conocimiento de este portal.
               </p>
             </div>
-            <div className="mt-4">
+            <div className="mt-5">
               <Link 
-                href="/instituciones/instituto-cultural-andino" 
+                href="/eduardo-ceballos" 
                 className="text-earth-red hover:underline text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1"
               >
-                Ver institución &rarr;
+                Ver Legado de Eduardo &rarr;
               </Link>
             </div>
           </section>
@@ -109,41 +116,36 @@ export default async function AcercaPage() {
                 Con una larga trayectoria en la comunicación cultural, ha sido un medio clave para registrar testimonios, crónicas, efemérides y expresiones artísticas. Este portal representa su evolución digital y federal.
               </p>
             </div>
-            <div className="mt-4">
+            <div className="mt-5">
               <Link 
-                href="/instituciones/revista-la-gauchita" 
+                href="/revista-la-gauchita" 
                 className="text-earth-red hover:underline text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1"
               >
-                Explorar revista &rarr;
+                Explorar Revista &rarr;
               </Link>
             </div>
           </section>
 
-          {/* Eduardo Ceballos */}
+          {/* Instituto Cultural Andino */}
           <section className="bg-[#fcfbf9] border border-stone-beige/80 rounded-lg p-6 flex flex-col justify-between hover:border-muted-amber hover:shadow-md transition-all duration-300">
             <div className="flex flex-col gap-3">
               <h4 className="font-serif font-bold text-charcoal text-base">
-                Eduardo Ceballos
+                Instituto Cultural Andino
               </h4>
               <p className="text-xs text-stone-700 leading-relaxed">
-                Escritor, periodista y promotor cultural, ha dedicado su labor al rescate y resguardo de la identidad federal. Sus valiosas recopilaciones históricas forman parte del núcleo de conocimiento de este portal.
+                Pilar fundamental en la investigación y promoción de las tradiciones, el folklore y el patrimonio cultural del norte argentino. Colabora activamente en la difusión de materiales y documentos valiosos para docentes, investigadores y estudiantes.
               </p>
             </div>
-            <div className="mt-4">
-              {eduardoCeballosExists ? (
-                <Link 
-                  href="/personajes/eduardo-ceballos" 
-                  className="text-earth-red hover:underline text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1"
-                >
-                  Ver perfil &rarr;
-                </Link>
-              ) : (
-                <span className="text-stone-400 text-xs font-mono font-bold uppercase tracking-wider block">
-                  Próximamente
-                </span>
-              )}
+            <div className="mt-5">
+              <Link 
+                href="/instituto-cultural-andino" 
+                className="text-earth-red hover:underline text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1"
+              >
+                Ver Instituto &rarr;
+              </Link>
             </div>
           </section>
+
         </div>
 
       </div>
