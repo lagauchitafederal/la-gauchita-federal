@@ -102,6 +102,8 @@ export async function getEditorialRelationsForEntity(
       institution: [],
       recognition: [],
       media_asset: [],
+      magazine_edition: [],
+      cultural_publication: [],
     };
 
     const relationList = relations.map((rel: any) => {
@@ -185,6 +187,30 @@ export async function getEditorialRelationsForEntity(
               });
             })
         : Promise.resolve(),
+      // Magazine Editions
+      idsByType.magazine_edition && idsByType.magazine_edition.length > 0
+        ? supabase
+            .from('magazine_editions')
+            .select('id, title, slug, edition_number')
+            .in('id', idsByType.magazine_edition)
+            .then(({ data }) => {
+              (data || []).forEach((d) => {
+                detailsMap[d.id] = { label: d.title || `Edición Nº ${d.edition_number}`, slug: d.slug };
+              });
+            })
+        : Promise.resolve(),
+      // Cultural Publications
+      idsByType.cultural_publication && idsByType.cultural_publication.length > 0
+        ? supabase
+            .from('cultural_publications')
+            .select('id, title, slug')
+            .in('id', idsByType.cultural_publication)
+            .then(({ data }) => {
+              (data || []).forEach((d) => {
+                detailsMap[d.id] = { label: d.title, slug: d.slug };
+              });
+            })
+        : Promise.resolve(),
     ]);
 
     // 4. Map names, slugs and admin URLs back to the list
@@ -204,6 +230,10 @@ export async function getEditorialRelationsForEntity(
         editUrl = `/admin/reconocimientos/${rel.related_id}/editar`;
       } else if (rel.related_type === 'media_asset') {
         editUrl = `/admin/archivo/${rel.related_id}/editar`;
+      } else if (rel.related_type === 'magazine_edition') {
+        editUrl = `/admin/revista/${rel.related_id}/editar`;
+      } else if (rel.related_type === 'cultural_publication') {
+        editUrl = `/admin/publicaciones/${rel.related_id}/editar`;
       }
 
       return {
@@ -299,6 +329,34 @@ export async function searchAvailableEntities(
       return (data || []).map((d) => ({
         id: d.id,
         label: d.title || d.original_filename || d.storage_path,
+      }));
+    }
+
+    if (type === 'magazine_edition') {
+      const { data, error } = await supabase
+        .from('magazine_editions')
+        .select('id, title, slug, edition_number')
+        .ilike('title', searchQuery)
+        .limit(10);
+      if (error) throw error;
+      return (data || []).map((d) => ({
+        id: d.id,
+        label: d.title || `Edición Nº ${d.edition_number}`,
+        slug: d.slug,
+      }));
+    }
+
+    if (type === 'cultural_publication') {
+      const { data, error } = await supabase
+        .from('cultural_publications')
+        .select('id, title, slug')
+        .ilike('title', searchQuery)
+        .limit(10);
+      if (error) throw error;
+      return (data || []).map((d) => ({
+        id: d.id,
+        label: d.title,
+        slug: d.slug,
       }));
     }
 

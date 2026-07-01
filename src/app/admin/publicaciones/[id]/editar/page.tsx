@@ -7,7 +7,9 @@ import { getEnv } from '../../../../../lib/supabase/env';
 import AdminShell from '../../../../../components/admin/AdminShell';
 import AdminSectionHeader from '../../../../../components/admin/AdminSectionHeader';
 import EditPublicationForm from '../../../../../components/admin/publications/EditPublicationForm';
+import EditorialRelationsManager from '../../../../../components/admin/content/EditorialRelationsManager';
 import { getAdminPublicationById } from '../../../../../lib/admin/admin-publications';
+import { getEditorialRelationsForEntity } from '../../../../../lib/admin/admin-editorial-relations';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +34,7 @@ export default async function EditPublicationPage({ params }: EditPublicationPag
     auth: { persistSession: false }
   });
 
-  const [publication, institutionsRes, coversRes] = await Promise.all([
+  const [publication, institutionsRes, coversRes, relations] = await Promise.all([
     getAdminPublicationById(id),
     supabase
       .from('institutions')
@@ -44,7 +46,8 @@ export default async function EditPublicationPage({ params }: EditPublicationPag
       .select('id, title, original_filename')
       .eq('asset_type', 'cover_image')
       .eq('status', 'active')
-      .order('title')
+      .order('title'),
+    getEditorialRelationsForEntity('cultural_publication', id)
   ]);
 
   if (!publication) {
@@ -62,12 +65,20 @@ export default async function EditPublicationPage({ params }: EditPublicationPag
         inPreparation={false}
       />
 
-      <EditPublicationForm
-        publicationId={id}
-        initialData={publication}
-        institutions={institutions}
-        covers={covers}
-      />
+      <div className="flex flex-col gap-8">
+        <EditPublicationForm
+          publicationId={id}
+          initialData={publication}
+          institutions={institutions}
+          covers={covers}
+        />
+
+        <EditorialRelationsManager
+          entityType="cultural_publication"
+          entityId={id}
+          initialRelations={relations}
+        />
+      </div>
     </AdminShell>
   );
 }

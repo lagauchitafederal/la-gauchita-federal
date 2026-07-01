@@ -23,7 +23,8 @@ const TYPE_LABELS: Record<string, string> = {
   institution: 'Institución',
   recognition: 'Reconocimiento',
   media_asset: 'Archivo',
-  magazine_edition: 'Edición de Revista'
+  magazine_edition: 'Edición de Revista',
+  cultural_publication: 'Publicación Cultural'
 };
 
 export default function PublicEditorialRelations({ relations }: PublicEditorialRelationsProps) {

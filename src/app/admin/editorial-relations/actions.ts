@@ -18,6 +18,10 @@ function revalidateEntityPath(entityType: string, entityId: string) {
   } else if (entityType === 'content') {
     revalidatePath(`/admin/efemerides/${entityId}/editar`);
     revalidatePath(`/admin/contenidos/${entityId}/editar`);
+  } else if (entityType === 'cultural_publication') {
+    revalidatePath(`/admin/publicaciones/${entityId}/editar`);
+  } else if (entityType === 'magazine_edition') {
+    revalidatePath(`/admin/revista/${entityId}/editar`);
   }
 }
 

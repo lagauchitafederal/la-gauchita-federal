@@ -32,7 +32,9 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
   person: 'Personaje',
   institution: 'Institución',
   recognition: 'Reconocimiento',
-  media_asset: 'Archivo'
+  media_asset: 'Archivo',
+  magazine_edition: 'Edición de Revista',
+  cultural_publication: 'Publicación Cultural'
 };
 
 const STATUS_LABELS: Record<string, { text: string; classes: string }> = {
@@ -271,6 +273,18 @@ export default function EditorialRelationsManager({
             🖼️
           </span>
         );
+      case 'magazine_edition':
+        return (
+          <span className="w-5 h-5 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center text-[10px] font-bold border border-teal-200" title="Edición de Revista">
+            📚
+          </span>
+        );
+      case 'cultural_publication':
+        return (
+          <span className="w-5 h-5 bg-sky-50 text-sky-600 rounded-full flex items-center justify-center text-[10px] font-bold border border-sky-200" title="Publicación Cultural">
+            💿
+          </span>
+        );
       default:
         return <span>🔗</span>;
     }
@@ -347,6 +361,8 @@ export default function EditorialRelationsManager({
                 <option value="institution">Institución</option>
                 <option value="recognition">Reconocimiento</option>
                 <option value="media_asset">Archivo Visual</option>
+                <option value="magazine_edition">Edición de Revista</option>
+                <option value="cultural_publication">Publicación Cultural</option>
               </select>
             </div>
 
