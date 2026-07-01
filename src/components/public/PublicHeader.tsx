@@ -22,6 +22,7 @@ const legacyLinks = [
   { href: '/eduardo-ceballos', label: 'Eduardo Ceballos' },
   { href: '/revista-la-gauchita', label: 'Revista La Gauchita' },
   { href: '/instituto-cultural-andino', label: 'Instituto Cultural Andino' },
+  { href: '/publicaciones', label: 'Publicaciones' },
 ];
 
 export default async function PublicHeader() {

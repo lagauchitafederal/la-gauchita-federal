@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '../supabase/server';
 export interface PublicRelationDetail {
   id: string;
   relationType: string;
-  relatedType: 'content' | 'person' | 'institution' | 'recognition' | 'media_asset' | 'magazine_edition';
+  relatedType: 'content' | 'person' | 'institution' | 'recognition' | 'media_asset' | 'magazine_edition' | 'cultural_publication';
   relatedId: string;
   title: string;
   description: string | null;
@@ -16,7 +16,7 @@ export interface PublicRelationDetail {
  * Prevents N+1 queries by batch loading details and enforces RLS/public visibility filters.
  */
 export async function getPublicEditorialRelations(
-  entityType: 'person' | 'content' | 'institution' | 'recognition' | 'magazine_edition',
+  entityType: 'person' | 'content' | 'institution' | 'recognition' | 'magazine_edition' | 'cultural_publication',
   entityId: string
 ): Promise<PublicRelationDetail[]> {
   try {
@@ -33,7 +33,7 @@ export async function getPublicEditorialRelations(
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error fetching public editorial relations:', error);
+      console.warn('Error fetching public editorial relations:', error);
       return [];
     }
 
@@ -49,6 +49,7 @@ export async function getPublicEditorialRelations(
       recognition: [],
       media_asset: [],
       magazine_edition: [],
+      cultural_publication: [],
     };
 
     const tempRelations = relations.map((rel: any) => {
@@ -63,7 +64,7 @@ export async function getPublicEditorialRelations(
       return {
         id: rel.id,
         relationType: rel.relation_type,
-        relatedType: relatedType as 'content' | 'person' | 'institution' | 'recognition' | 'media_asset' | 'magazine_edition',
+        relatedType: relatedType as 'content' | 'person' | 'institution' | 'recognition' | 'media_asset' | 'magazine_edition' | 'cultural_publication',
         relatedId,
       };
     });
@@ -193,6 +194,26 @@ export async function getPublicEditorialRelations(
               });
             })
         : Promise.resolve(),
+
+      // Cultural Publications (published & public)
+      idsByType.cultural_publication.length > 0
+        ? supabase
+            .from('cultural_publications')
+            .select('id, title, slug, short_description')
+            .in('id', idsByType.cultural_publication)
+            .eq('status', 'published')
+            .eq('visibility', 'public')
+            .then(({ data }) => {
+              (data || []).forEach((d) => {
+                detailsMap[d.id] = {
+                  title: d.title,
+                  description: d.short_description,
+                  href: `/publicaciones/${d.slug}`,
+                  contentTypeCode: null,
+                };
+              });
+            })
+        : Promise.resolve(),
     ]);
 
     // 4. Map back to details and filter out inactive/private targets, deduplicating entities
@@ -226,7 +247,7 @@ export async function getPublicEditorialRelations(
 
     return result;
   } catch (err) {
-    console.error('Unexpected error in getPublicEditorialRelations:', err);
+    console.warn('Unexpected error in getPublicEditorialRelations:', err);
     return [];
   }
 }
