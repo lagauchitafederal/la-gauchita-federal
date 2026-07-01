@@ -4,6 +4,16 @@ import { getRelevanceScore } from './relevance';
 
 import { SelectedTerritory, sortPublicContentByRelevance, sortPublicInstitutionsByRelevance } from './relevance';
 
+function serializeSupabaseError(error: any) {
+  if (!error) return null;
+  return {
+    message: error.message || 'Unknown error',
+    code: error.code || 'UNKNOWN',
+    details: error.details || null,
+    hint: error.hint || null
+  };
+}
+
 export interface PublicContent {
   id?: string;
   title: string;
@@ -455,6 +465,8 @@ export async function getTodayEphemerides(territory?: SelectedTerritory): Promis
     const { day: todayDay, month: todayMonthIndex } = getArgentinaDateParts();
     const todayMonthDay = (todayMonthIndex + 1) * 100 + todayDay;
 
+    let targetData: any[] = [];
+
     const { data, error } = await supabase
       .from('contents')
       .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
@@ -465,12 +477,28 @@ export async function getTodayEphemerides(territory?: SelectedTerritory): Promis
       .order('publish_date', { ascending: false });
 
     if (error) {
-      console.error('Error fetching today ephemerides:', error);
-      return [];
+      console.warn('Error fetching today ephemerides with event_month_day (attempting fallback):', serializeSupabaseError(error));
+
+      // Fallback: Query all published contents and perform day/month filtering in memory
+      const fallbackRes = await supabase
+        .from('contents')
+        .select('title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
+        .eq('status', 'published')
+        .eq('visibility', 'public')
+        .order('is_featured', { ascending: false })
+        .order('publish_date', { ascending: false });
+
+      if (fallbackRes.error) {
+        console.warn('Fallback query also failed:', serializeSupabaseError(fallbackRes.error));
+        return [];
+      }
+      targetData = fallbackRes.data || [];
+    } else {
+      targetData = data || [];
     }
 
     // Filter in-memory for matching day and month (Argentina timezone)
-    let filtered = (data || []).filter((item: any) => {
+    let filtered = targetData.filter((item: any) => {
       // Don't show future publish dates
       if (item.publish_date && new Date(item.publish_date) > new Date()) {
         return false;
@@ -526,8 +554,11 @@ export async function getTodayEphemerides(territory?: SelectedTerritory): Promis
     });
 
     return mapped;
-  } catch (err) {
-    console.error('Unexpected error fetching today ephemerides:', err);
+  } catch (err: any) {
+    console.warn('Unexpected error fetching today ephemerides:', {
+      message: err.message || String(err),
+      stack: err.stack
+    });
     return [];
   }
 }

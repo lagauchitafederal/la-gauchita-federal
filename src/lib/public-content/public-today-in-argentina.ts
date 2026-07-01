@@ -17,11 +17,23 @@ export interface TodayInArgentinaData {
   recognitions: any[];
 }
 
+function serializeSupabaseError(error: any) {
+  if (!error) return null;
+  return {
+    message: error.message || 'Unknown error',
+    code: error.code || 'UNKNOWN',
+    details: error.details || null,
+    hint: error.hint || null
+  };
+}
+
 export async function getTodayInArgentinaData(territory?: SelectedTerritory): Promise<TodayInArgentinaData> {
   try {
     const supabase = createServerSupabaseClient();
     const { year: currentYear, month: todayMonthIndex, day: todayDay } = getArgentinaDateParts();
     const todayMonthDay = (todayMonthIndex + 1) * 100 + todayDay;
+
+    let contentsDataToUse: any[] = [];
 
     // 1. Fetch Today's Ephemerides using optimized contents table filter
     const { data: contentsData, error: contentsError } = await supabase
@@ -32,10 +44,25 @@ export async function getTodayInArgentinaData(territory?: SelectedTerritory): Pr
       .eq('event_month_day', todayMonthDay);
 
     if (contentsError) {
-      console.error('Error fetching contents for Today in Argentina:', contentsError);
+      console.warn('Error fetching contents for Today in Argentina (attempting fallback):', serializeSupabaseError(contentsError));
+
+      // Fallback: Query published contents and perform day/month filtering in memory
+      const fallbackRes = await supabase
+        .from('contents')
+        .select('id, title, slug, subtitle, summary, event_date, publish_date, is_featured, created_at, region_id, province_id, municipality_id, institutions(name, slug), categories(name), content_types(code, name, slug)')
+        .eq('status', 'published')
+        .eq('visibility', 'public');
+
+      if (fallbackRes.error) {
+        console.warn('Fallback contents query also failed:', serializeSupabaseError(fallbackRes.error));
+      } else {
+        contentsDataToUse = fallbackRes.data || [];
+      }
+    } else {
+      contentsDataToUse = contentsData || [];
     }
 
-    const rawContents = (contentsData || []).map((c: any) => ({
+    const rawContents = contentsDataToUse.map((c: any) => ({
       id: c.id,
       title: c.title,
       slug: c.slug,
@@ -84,7 +111,7 @@ export async function getTodayInArgentinaData(territory?: SelectedTerritory): Pr
       .eq('visibility', 'public');
 
     if (peopleError) {
-      console.error('Error fetching people for Today in Argentina:', peopleError);
+      console.warn('Error fetching people for Today in Argentina:', serializeSupabaseError(peopleError));
     }
 
     const rawPeople = (peopleData || []).map((p: any) => ({
@@ -155,7 +182,7 @@ export async function getTodayInArgentinaData(territory?: SelectedTerritory): Pr
       .lte('event_date', next30DaysStr);
 
     if (eventsError) {
-      console.error('Error fetching events for Today in Argentina:', eventsError);
+      console.warn('Error fetching events for Today in Argentina:', serializeSupabaseError(eventsError));
     }
 
     const rawEvents = (eventsData || []).map((c: any) => ({
@@ -200,7 +227,7 @@ export async function getTodayInArgentinaData(territory?: SelectedTerritory): Pr
       .eq('visibility', 'public');
 
     if (recError) {
-      console.error('Error fetching recognitions for Today in Argentina:', recError);
+      console.warn('Error fetching recognitions for Today in Argentina:', serializeSupabaseError(recError));
     }
 
     const rawRecognitions = recData || [];
@@ -226,8 +253,11 @@ export async function getTodayInArgentinaData(territory?: SelectedTerritory): Pr
       agendaEvents,
       recognitions
     };
-  } catch (err) {
-    console.error('Unexpected error in getTodayInArgentinaData:', err);
+  } catch (err: any) {
+    console.warn('Unexpected error in getTodayInArgentinaData:', {
+      message: err.message || String(err),
+      stack: err.stack
+    });
     return {
       leadStory: null,
       secondaryEphemerides: [],

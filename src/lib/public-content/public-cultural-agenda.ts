@@ -17,6 +17,16 @@ export interface AgendaData {
   availableCategories: Array<{ id: string; name: string; slug: string }>;
 }
 
+function serializeSupabaseError(error: any) {
+  if (!error) return null;
+  return {
+    message: error.message || 'Unknown error',
+    code: error.code || 'UNKNOWN',
+    details: error.details || null,
+    hint: error.hint || null
+  };
+}
+
 /**
  * Fetches, filters, sorts and categorizes all public events in the America/Argentina/Buenos_Aires timezone.
  * Applies territorial relevance scoring and limits the output according to Phase 8.B1 specifications.
@@ -50,7 +60,7 @@ export async function getPublicCulturalAgenda(
       .not('event_date', 'is', null);
 
     if (error) {
-      console.error('Error fetching cultural agenda events:', error);
+      console.warn('Error fetching cultural agenda events:', serializeSupabaseError(error));
       return result;
     }
 
@@ -168,8 +178,11 @@ export async function getPublicCulturalAgenda(
       result.archiveEvents = archiveList.slice(0, 12);
     }
 
-  } catch (err) {
-    console.error('Unexpected error in getPublicCulturalAgenda:', err);
+  } catch (err: any) {
+    console.warn('Unexpected error in getPublicCulturalAgenda:', {
+      message: err.message || String(err),
+      stack: err.stack
+    });
   }
 
   return result;

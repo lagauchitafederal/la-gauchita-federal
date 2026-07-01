@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { parseTerritoryCookie } from '../lib/utils/territory';
@@ -46,17 +46,17 @@ export const metadata: Metadata = {
 };
 
 const PERSON_TYPE_LABELS: Record<string, string> = {
-  historical_figure: 'Prócer / Figura Histórica',
+  historical_figure: 'PrÃ³cer / Figura HistÃ³rica',
   writer: 'Escritor/a',
   poet: 'Poeta / Poetisa',
   historian: 'Historiador/a',
-  musician: 'Músico/a',
+  musician: 'MÃºsico/a',
   singer: 'Cantante',
   artist: 'Artista',
   artisan: 'Artesano/a',
   educator: 'Educador/a',
   researcher: 'Investigador/a',
-  public_figure: 'Figura Pública',
+  public_figure: 'Figura PÃºblica',
   cultural_referent: 'Referente Cultural',
   other: 'Personaje Popular'
 };
@@ -64,7 +64,7 @@ const PERSON_TYPE_LABELS: Record<string, string> = {
 const TYPE_LABELS: Record<string, string> = {
   person: 'Personaje',
   content: 'Contenido',
-  institution: 'Institución',
+  institution: 'InstituciÃ³n',
   recognition: 'Reconocimiento',
   media_asset: 'Archivo'
 };
@@ -201,7 +201,7 @@ export default async function Home() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       ))}
-      
+
       {/* A. HERO PRINCIPAL */}
       {leadStory ? (
         <section className="bg-warm-white border border-stone-beige rounded-lg overflow-hidden flex flex-col md:flex-row shadow-sm hover:border-muted-amber hover:shadow-md transition-all duration-350">
@@ -218,13 +218,13 @@ export default async function Home() {
             <div className="w-full md:w-1/2 min-h-[320px] bg-[#fbf8f3] flex flex-col justify-between p-8 border-b md:border-b-0 md:border-r border-stone-beige/75 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-stone-beige/10 rounded-full blur-xl pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-earth-red/5 rounded-full blur-xl pointer-events-none" />
-              
+
               <div className="flex flex-col gap-3 z-10">
                 <span className="text-[10px] font-bold text-earth-red bg-earth-red/5 px-2.5 py-0.5 rounded border border-earth-red/10 tracking-widest uppercase font-mono self-start">
                   Patrimonio & Memoria
                 </span>
                 <span className="font-serif italic text-stone-500 text-sm">
-                  Documento e Investigación
+                  Documento e InvestigaciÃ³n
                 </span>
               </div>
 
@@ -256,10 +256,10 @@ export default async function Home() {
                     </span>
                   )}
                 </div>
-                
+
                 {leadStoryTerritoryLabel && (
                   <span className="text-[9px] font-mono text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/65 uppercase tracking-wide">
-                    📍 {leadStoryTerritoryLabel}
+                    ðŸ“ {leadStoryTerritoryLabel}
                   </span>
                 )}
               </div>
@@ -270,7 +270,7 @@ export default async function Home() {
                     {leadStory.title}
                   </Link>
                 </h2>
-                
+
                 {leadStory.subtitle && (
                   <p className="text-xs font-semibold text-stone-700 italic leading-relaxed">
                     {stripHtml(leadStory.subtitle)}
@@ -293,7 +293,7 @@ export default async function Home() {
               >
                 Leer historia completa &rarr;
               </Link>
-              
+
               <Link
                 href="/acerca"
                 className="inline-flex items-center justify-center px-4 py-2 border border-stone-beige hover:border-earth-red text-stone-700 hover:text-earth-red text-[10px] uppercase font-bold tracking-wider rounded font-mono bg-white transition-all"
@@ -313,14 +313,14 @@ export default async function Home() {
             Archivo Vivo de Historia y Cultura
           </h1>
           <p className="text-sm text-stone-600 max-w-lg">
-            Estamos preparando contenidos y recopilando documentos históricos de cada rincón del país.
+            Estamos preparando contenidos y recopilando documentos histÃ³ricos de cada rincÃ³n del paÃ­s.
           </p>
         </header>
       )}
 
-      {/* B. BLOQUE PRINCIPAL DE HISTORIAS + C. EFEMÉRIDES */}
+      {/* B. BLOQUE PRINCIPAL DE HISTORIAS + C. EFEMÃ‰RIDES */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Left Column: Historias y Cultura */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="flex justify-between items-end pb-3 border-b border-stone-beige/85">
@@ -348,13 +348,13 @@ export default async function Home() {
           ) : (
             <div className="bg-stone-50 border border-stone-200/60 rounded-lg p-8 text-center">
               <p className="text-xs text-stone-500 italic font-mono">
-                No hay más historias publicadas para este territorio.
+                No hay mÃ¡s historias publicadas para este territorio.
               </p>
             </div>
           )}
         </div>
 
-        {/* Right Column: Un día como hoy */}
+        {/* Right Column: Un dÃ­a como hoy */}
         <div className="flex flex-col">
           <section className="bg-[#fdfbf7] border border-muted-amber/60 rounded-lg p-6 flex flex-col gap-6 shadow-sm h-full">
             <div className="flex items-center justify-between pb-3 border-b border-stone-beige/80">
@@ -363,11 +363,11 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <h2 className="text-xs font-bold uppercase tracking-wider text-earth-red">
-                  Un día como hoy
+                  Un dÃ­a como hoy
                 </h2>
               </div>
               <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider font-mono">
-                Efemérides
+                EfemÃ©rides
               </span>
             </div>
 
@@ -389,7 +389,7 @@ export default async function Home() {
                           </span>
                           {ephemerisTerritoryLabel && (
                             <span className="inline-flex items-center gap-1 text-[9px] font-bold text-stone-600 bg-stone-beige/40 px-2 py-0.5 rounded border border-stone-beige/60 uppercase tracking-wide">
-                              📍 {ephemerisTerritoryLabel}
+                              ðŸ“ {ephemerisTerritoryLabel}
                             </span>
                           )}
                         </div>
@@ -410,7 +410,7 @@ export default async function Home() {
                           href={`/contenidos/${mainItem.slug}`}
                           className="inline-flex items-center text-[10px] font-bold text-earth-red hover:underline mt-1 uppercase tracking-wider font-mono"
                         >
-                          Leer efeméride &rarr;
+                          Leer efemÃ©ride &rarr;
                         </Link>
                       </>
                     );
@@ -421,7 +421,7 @@ export default async function Home() {
                 {todayEphemerides.length > 1 && (
                   <div className="border-t border-stone-beige/80 pt-4 mt-2 flex flex-col gap-3.5">
                     <h4 className="text-[9px] font-bold uppercase tracking-widest text-stone-500">
-                      Otras efemérides
+                      Otras efemÃ©rides
                     </h4>
                     <div className="flex flex-col gap-3">
                       {todayEphemerides.slice(1, 3).map((item) => {
@@ -458,14 +458,14 @@ export default async function Home() {
                     Hoy en Argentina
                   </span>
                   <p className="text-[11px] text-stone-600 leading-normal font-serif">
-                    Acontecimientos, conmemoraciones de próceres y la agenda cultural federal programada para el día de la fecha.
+                    Acontecimientos, conmemoraciones de prÃ³ceres y la agenda cultural federal programada para el dÃ­a de la fecha.
                   </p>
                   <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-beige/40 pt-2.5 mt-1">
                     <Link
                       href="/hoy"
                       className="text-[10px] font-bold text-earth-red hover:underline uppercase tracking-wider font-mono"
                     >
-                      Explorar el día &rarr;
+                      Explorar el dÃ­a &rarr;
                     </Link>
                     <Link
                       href="/agenda"
@@ -511,15 +511,15 @@ export default async function Home() {
                 : null;
               const lifeSpan = (() => {
                 if (!p.birth_date && !p.death_date) return null;
-                const birthYear = p.birth_date ? p.birth_date.split('-')[0] : '¿?';
+                const birthYear = p.birth_date ? p.birth_date.split('-')[0] : 'Â¿?';
                 const deathYear = p.death_date ? p.death_date.split('-')[0] : 'Presente';
-                return `${birthYear} – ${deathYear}`;
+                return `${birthYear} â€“ ${deathYear}`;
               })();
               const tLabel = (() => {
                 if (p.municipalities?.name) return `${p.municipalities.name}, ${p.provinces?.name || ''}`;
                 if (p.provinces?.name) return p.provinces.name;
                 if (p.regions?.name) return p.regions.name;
-                return 'Ámbito Nacional';
+                return 'Ãmbito Nacional';
               })();
 
               return (
@@ -597,59 +597,78 @@ export default async function Home() {
       )}
 
       {/* F. BLOQUE INSTITUCIONAL */}
-      <section className="bg-[#fcf8f2] border border-stone-beige rounded-lg p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center">
-        <div className="flex-1 flex flex-col gap-4 text-left">
+      <section className="bg-[#fcf8f2] border border-stone-beige rounded-lg p-6 sm:p-8 md:p-10 flex flex-col gap-6 shadow-sm">
+        <div className="flex flex-col gap-2.5 text-center max-w-2xl mx-auto">
           <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-earth-red font-mono">
-            Portal Cultural Histórico de Argentina
+            Legado e Institucional
           </span>
-          <h2 className="text-3xl font-serif font-black text-charcoal leading-tight">
-            La Gauchita Federal & Instituto Cultural Andino
+          <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal leading-tight">
+            Una historia que sigue creciendo
           </h2>
-          <p className="text-sm text-stone-700 leading-relaxed font-serif">
-            Un espacio dedicado al resguardo de nuestra memoria y tradiciones. A través de la <strong>Revista La Gauchita</strong>, promovemos la preservación, investigación y difusión de la cultura nacional, conectando las historias y voces de cada rincón de la patria.
+          <p className="text-sm text-stone-705 leading-relaxed font-serif">
+            La Gauchita Federal nace como continuidad digital de una obra cultural construida durante dÃ©cadas: Revista La Gauchita, el legado de Eduardo Ceballos y el Instituto Cultural Andino.
           </p>
-          <div className="flex flex-wrap gap-3 mt-2">
-            <Link
-              href="/acerca"
-              className="inline-flex items-center justify-center px-4 py-2 bg-earth-red hover:bg-earth-red/90 text-white text-[10px] uppercase font-bold tracking-wider rounded font-mono transition-colors"
-            >
-              Conocer el proyecto
-            </Link>
-            <Link
-              href="/instituciones"
-              className="inline-flex items-center justify-center px-4 py-2 border border-stone-beige hover:border-earth-red text-stone-700 hover:text-earth-red text-[10px] uppercase font-bold tracking-wider rounded font-mono bg-white transition-all"
-            >
-              Ver instituciones aliadas
-            </Link>
-            <Link
-              href="/revista"
-              className="inline-flex items-center justify-center px-4 py-2 border border-stone-beige hover:border-earth-red text-stone-700 hover:text-earth-red text-[10px] uppercase font-bold tracking-wider rounded font-mono bg-white transition-all"
-            >
-              Archivo de la Revista
-            </Link>
-          </div>
         </div>
-        
-        {/* Editor Showcase using real active institutions */}
-        {activeInstitutions.length > 0 && (
-          <div className="w-full md:w-1/3 flex flex-col gap-3 shrink-0">
-            <span className="text-[9px] font-mono font-bold text-stone-500 uppercase tracking-wider">
-              Institución Editora y Red
-            </span>
-            <div className="flex flex-col gap-3">
-              {activeInstitutions.slice(0, 2).map((inst) => (
-                <div key={inst.slug} className="p-4 bg-white border border-stone-beige rounded-md flex flex-col gap-1.5 shadow-sm">
-                  <h4 className="font-serif font-bold text-charcoal text-xs hover:text-earth-red transition-colors">
-                    <Link href={`/instituciones/${inst.slug}`}>{inst.name}</Link>
-                  </h4>
-                  <span className="text-[8px] font-bold text-earth-red bg-earth-red/5 px-2 py-0.5 rounded border border-earth-red/10 self-start tracking-wider uppercase font-mono">
-                    {formatInstitutionType(inst.institution_type)}
-                  </span>
-                </div>
-              ))}
+
+        {/* Tres Columnas del Legado */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
+
+          {/* Eduardo Ceballos */}
+          <Link href="/eduardo-ceballos" className="group bg-white border border-stone-beige/85 hover:border-earth-red p-5 rounded-lg flex flex-col justify-between transition-all duration-200 hover:shadow-sm">
+            <div className="flex flex-col gap-2">
+              <h3 className="font-serif font-bold text-base text-charcoal group-hover:text-earth-red transition-colors">
+                Eduardo Ceballos
+              </h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                Legado de escritor, periodista e investigador cultural.
+              </p>
             </div>
-          </div>
-        )}
+            <span className="text-[10px] font-mono font-bold text-earth-red uppercase tracking-wider mt-4 flex items-center gap-1">
+              Ver legado &rarr;
+            </span>
+          </Link>
+
+          {/* Revista La Gauchita */}
+          <Link href="/revista-la-gauchita" className="group bg-white border border-stone-beige/85 hover:border-earth-red p-5 rounded-lg flex flex-col justify-between transition-all duration-200 hover:shadow-sm">
+            <div className="flex flex-col gap-2">
+              <h3 className="font-serif font-bold text-base text-charcoal group-hover:text-earth-red transition-colors">
+                Revista La Gauchita
+              </h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                Trayectoria editorial, memoria y cultura popular.
+              </p>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-earth-red uppercase tracking-wider mt-4 flex items-center gap-1">
+              Explorar revista &rarr;
+            </span>
+          </Link>
+
+          {/* Instituto Cultural Andino */}
+          <Link href="/instituto-cultural-andino" className="group bg-white border border-stone-beige/85 hover:border-earth-red p-5 rounded-lg flex flex-col justify-between transition-all duration-200 hover:shadow-sm">
+            <div className="flex flex-col gap-2">
+              <h3 className="font-serif font-bold text-base text-charcoal group-hover:text-earth-red transition-colors">
+                Instituto Cultural Andino
+              </h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                Publicaciones, investigaciÃ³n y promociÃ³n cultural.
+              </p>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-earth-red uppercase tracking-wider mt-4 flex items-center gap-1">
+              Ver instituto &rarr;
+            </span>
+          </Link>
+
+        </div>
+
+        {/* Enlace editorial final */}
+        <div className="text-center pt-4 border-t border-stone-beige/40 mt-2">
+          <Link
+            href="/acerca"
+            className="inline-flex items-center justify-center px-6 py-2.5 bg-earth-red hover:bg-earth-red/90 text-white text-[10px] uppercase font-bold tracking-widest rounded font-mono transition-colors shadow-xs"
+          >
+            Conocer La Gauchita Federal
+          </Link>
+        </div>
       </section>
 
     </PublicPageShell>
